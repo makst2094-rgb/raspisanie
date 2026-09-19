@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Дневник</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: #f2f3f8; color: #000; max-width: 430px; margin: 0 auto; min-height: 100vh; }
+.lock-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1a1a3e, #2a2a5e, #3d3d7a); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 30px; }
+.lock-screen.hidden { display: none !important; }
+.lock-logo { width: 80px; height: 80px; border-radius: 20px; background: linear-gradient(145deg, #4a6cf7, #7c5cfc); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 8px 32px rgba(74,108,247,0.4); }
+.lock-logo svg { width: 40px; height: 40px; fill: white; }
+.lock-title { font-size: 28px; font-weight: 700; color: white; margin-bottom: 8px; }
+.lock-subtitle { font-size: 14px; color: rgba(255,255,255,0.6); margin-bottom: 32px; text-align: center; }
+.lock-input-wrapper { width: 100%; max-width: 320px; position: relative; margin-bottom: 16px; }
+.lock-input { width: 100%; padding: 16px; border: 2px solid rgba(255,255,255,0.2); border-radius: 14px; background: rgba(255,255,255,0.1); color: white; font-size: 16px; outline: none; }
+.lock-input::placeholder { color: rgba(255,255,255,0.4); }
+.lock-input:focus { border-color: #4a6cf7; }
+.lock-input.error { border-color: #ff3b30; animation: shake 0.4s; }
+.lock-btn { width: 100%; max-width: 320px; padding: 16px; background: #4a6cf7; color: white; border: none; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 12px; }
+.lock-btn:active { transform: scale(0.97); }
+.lock-btn:disabled { opacity: 0.5; }
+.lock-error { color: #ff6b6b; font-size: 13px; min-height: 18px; text-align: center; margin-bottom: 8px; }
+.lock-hint { color: rgba(255,255,255,0.4); font-size: 12px; text-align: center; }
+.loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px 10px; }
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(145deg, #1a1a3e, #3d3d7a); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.user-info { flex: 1; margin-left: 12px; cursor: pointer; }
+.user-name { font-size: 16px; font-weight: 600; }
+.user-status { font-size: 13px; color: #8e8e93; margin-top: 1px; }
+.header-right { display: flex; gap: 10px; }
+.notification-btn { position: relative; background: none; border: none; padding: 4px; }
+.notification-badge { position: absolute; top: -6px; right: -10px; background: #e8303a; color: white; font-size: 11px; font-weight: 700; padding: 2px 6px; border-radius: 12px; }
+.menu-btn { background: none; border: none; padding: 4px; }
+.calendar { padding: 6px 16px 12px; }
+.calendar-week { display: flex; justify-content: space-between; }
+.calendar-day { text-align: center; flex: 1; cursor: pointer; }
+.day-name { font-size: 13px; color: #8e8e93; margin-bottom: 8px; }
+.day-number { font-size: 19px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto; }
+.day-number.selected { background: #4a6cf7; color: white; }
+.day-number.weekend { color: #e8303a; }
+.filters { display: flex; gap: 10px; padding: 2px 16px 14px; align-items: center; }
+.filter-btn { padding: 9px 16px; border-radius: 12px; border: none; font-size: 14px; font-weight: 600; background: white; cursor: pointer; }
+.filter-icon-btn { width: 40px; height: 40px; border-radius: 12px; border: none; background: white; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: auto; }
+.dots-btn { font-size: 19px; background: none; border: none; cursor: pointer; }
+.page { display: none; }
+.page.active { display: block; }
+.schedule { padding: 0 16px 100px; }
+.lesson-card { background: white; border-radius: 16px; padding: 14px 18px 16px 20px; margin-bottom: 2px; position: relative; cursor: pointer; }
+.lesson-card::before { content: ''; position: absolute; left: 0; top: 14px; bottom: 14px; width: 4px; background: #a0a0a5; border-radius: 0 4px 4px 0; }
+.lesson-info { display: flex; gap: 8px; margin-bottom: 4px; font-size: 14px; color: #8e8e93; flex-wrap: wrap; }
+.lesson-subject { font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+.homework-section { display: flex; gap: 8px; margin-top: 4px; }
+.homework-icon svg { width: 20px; height: 20px; fill: #8e8e93; }
+.homework-title { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+.homework-text { font-size: 14px; color: #6e6e73; line-height: 1.4; }
+.homework-pending { font-size: 13px; font-weight: 500; margin-top: 4px; color: #ff6b00; }
+.break-row { display: flex; justify-content: space-between; padding: 8px 4px; font-size: 14px; color: #6e6e73; }
+.break-left { display: flex; align-items: center; gap: 6px; }
+.break-icon svg { width: 20px; height: 20px; fill: #6e6e73; }
+.section-title { font-size: 18px; font-weight: 600; margin: 12px 0 8px; }
+.empty-day { text-align: center; padding: 80px 20px; }
+.empty-emoji { font-size: 64px; margin-bottom: 16px; }
+.empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.empty-subtitle { font-size: 14px; color: #8e8e93; line-height: 1.4; }
+.grades-page, .tasks-page { padding: 0 16px 140px; }
+.week-nav { display: flex; gap: 10px; margin-bottom: 16px; align-items: center; }
+.week-nav-btn { background: white; border: none; width: 40px; height: 40px; border-radius: 12px; font-size: 19px; color: #4a6cf7; cursor: pointer; }
+.week-nav-label { flex: 1; text-align: center; background: white; border-radius: 12px; padding: 10px 16px; font-size: 14px; font-weight: 600; }
+.today-btn { background: white; border: none; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.date-group { background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+.date-group.today { border: 2px solid #4a6cf7; }
+.date-group-header-title { font-size: 11px; font-weight: 600; color: #8e8e93; text-transform: uppercase; }
+.date-group-sub { font-size: 12px; color: #8e8e93; margin-bottom: 12px; }
+.task-subject-name { font-size: 17px; font-weight: 600; margin: 14px 0 10px; }
+.task-item { display: flex; gap: 10px; padding: 8px 0; align-items: flex-start; }
+.task-item-checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid #d0d0d5; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.task-item-checkbox.checked { background: #000; border-color: #000; color: white; }
+.task-item-text { flex: 1; font-size: 15px; line-height: 1.4; }
+.task-item-text.done { color: #8e8e93; text-decoration: line-through; }
+.task-item-pending { font-size: 13px; color: #8e8e93; margin-top: 4px; }
+.grade-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #f0f0f5; }
+.grade-box { width: 42px; height: 42px; background: #e8e8ed; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+.grade-val { font-size: 19px; font-weight: 500; }
+.grade-row-info { flex: 1; }
+.grade-row-subject { font-size: 15px; margin-bottom: 2px; }
+.grade-row-desc { font-size: 12px; color: #8e8e93; }
+.subject-card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+.subject-card-top { display: flex; justify-content: space-between; margin-bottom: 2px; }
+.subject-name { font-size: 15px; flex: 1; }
+.subject-avg-box { width: 54px; height: 42px; border: 1.5px dashed #c7c7cc; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.subject-semester { font-size: 12px; color: #8e8e93; margin-bottom: 10px; }
+.progress-bar { width: 100%; height: 8px; background: #e8e8ed; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { height: 100%; background: #00a82d; }
+.progress-text { font-size: 12px; color: #8e8e93; }
+.progress-text.achieved { color: #00a82d; }
+.add-grade-fab { position: fixed; bottom: 140px; right: 18px; width: 50px; height: 50px; border-radius: 50%; background: #4a6cf7; color: white; border: none; font-size: 28px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+.segmented-control { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 398px; background: #e8e8ed; border-radius: 12px; display: none; padding: 3px; }
+.segment-btn { flex: 1; padding: 10px; background: transparent; border: none; font-size: 14px; font-weight: 600; color: #8e8e93; cursor: pointer; border-radius: 10px; }
+.segment-btn.active { background: white; color: #000; }
+.bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; background: white; border-top: 0.5px solid #e5e5ea; display: flex; justify-content: space-around; padding: 6px 0 26px; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 4px 10px; cursor: pointer; }
+.nav-icon svg { width: 26px; height: 26px; }
+.nav-icon svg path, .nav-icon svg rect, .nav-icon svg circle { fill: none; stroke: #8e8e93; stroke-width: 1.8; }
+.nav-item.active .nav-icon svg path, .nav-item.active .nav-icon svg rect, .nav-item.active .nav-icon svg circle { fill: #000; stroke: none; }
+.nav-label { font-size: 10px; color: #8e8e93; }
+.nav-item.active .nav-label { color: #000; font-weight: 600; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 700; align-items: flex-end; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 430px; max-height: 85vh; overflow-y: auto; padding: 20px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-header h2 { font-size: 19px; font-weight: 600; }
+.modal-close { background: #f2f2f7; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; }
+.edit-section { margin-bottom: 20px; }
+.edit-section h3 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.edit-field { margin-bottom: 14px; }
+.edit-field label { display: block; font-size: 12px; color: #8e8e93; margin-bottom: 6px; }
+.edit-field input { width: 100%; padding: 12px 14px; border: 1.5px solid #e5e5ea; border-radius: 12px; font-size: 14px; }
+.lesson-edit-item { background: #f9f9fb; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.lesson-edit-item .edit-label { font-size: 12px; color: #8e8e93; margin-bottom: 10px; font-weight: 600; }
+.lesson-edit-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.lesson-edit-row input { flex: 1; padding: 10px 12px; border: 1.5px solid #e5e5ea; border-radius: 10px; font-size: 13px; }
+.delete-btn { width: 40px; background: #ff3b30; color: white; border: none; border-radius: 10px; cursor: pointer; }
+.add-lesson-btn { background: #f2f2f7; color: #4a6cf7; width: 100%; padding: 12px; border: none; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-actions button { flex: 1; padding: 14px; border: none; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-reset { background: #f2f2f7; }
+.btn-save { background: #4a6cf7; color: white; }
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg></div>
+  <div class="lock-title">Дневник</div>
+  <div class="lock-subtitle">Введите код доступа</div>
+  <div class="lock-input-wrapper">
+    <input type="text" class="lock-input" id="lockPasswordInput" placeholder="Код доступа" autocomplete="off">
+  </div>
+  <div class="lock-error" id="lockError"></div>
+  <button class="lock-btn" id="lockBtn" onclick="checkPassword()">Разблокировать</button>
+  <div class="lock-hint">Код выдаётся после оплаты</div>
+</div>
+
+<div class="header">
+  <div style="display:flex;align-items:center;flex:1;">
+    <div class="avatar" onclick="openNameModal()"></div>
+    <div class="user-info" onclick="openNameModal()">
+      <div class="user-name" id="userName">—</div>
+      <div class="user-status">не в школе</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="notification-btn">🔔<span class="notification-badge">99+</span></button>
+    <button class="menu-btn">☰</button>
+  </div>
+</div>
+
+<div class="calendar"><div class="calendar-week" id="calendarWeek"></div></div>
+<div class="filters">
+  <button class="filter-btn" id="monthBtn">Сентябрь</button>
+  <button class="filter-btn active" onclick="goToday()">Сегодня</button>
+  <button class="filter-icon-btn">📄</button>
+  <button class="filter-icon-btn dots-btn" onclick="openEditModal()">···</button>
+</div>
+
+<div class="page active" id="pageSchedule"><div class="schedule" id="schedule"></div></div>
+<div class="page" id="pageGrades"><div class="grades-page" id="gradesContent"></div></div>
+<div class="page" id="pageTasks"><div class="tasks-page" id="tasksContent"></div></div>
+
+<button class="add-grade-fab" id="addGradeFab" onclick="openGradeModal()">+</button>
+<div class="segmented-control" id="segmentedControl">
+  <button class="segment-btn active" onclick="switchGradeView('date', this)">По дате</button>
+  <button class="segment-btn" onclick="switchGradeView('subject', this)">По предмету</button>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('schedule', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></svg></span><span class="nav-label">Расписание</span></button>
+  <button class="nav-item" onclick="switchPage('grades', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="nav-label">Оценки</span></button>
+  <button class="nav-item" onclick="switchPage('tasks', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></span><span class="nav-label">Задания</span></button>
+  <button class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-label">Школа</span></button>
+  <button class="nav-item"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/></svg></span><span class="nav-label">Портфолио</span></button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Настройки</h2><button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="edit-section"><h3>Параметры</h3>
+      <div class="edit-field"><label>Начало урока</label><input type="time" id="firstLessonStart" value="08:30"></div>
+      <div class="edit-field"><label>Длительность (мин)</label><input type="number" id="lessonDuration" value="45"></div>
+    </div>
+    <div class="edit-section"><h3>Уроки</h3><div id="lessonsEditor"></div><button class="add-lesson-btn" onclick="addNewLesson()">+ Добавить урок</button></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="resetToDefault()">Сбросить</button><button class="btn-save" onclick="saveSchedule()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="nameModalOverlay" onclick="if(event.target===this)closeNameModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Имя</h2><button class="modal-close" onclick="closeNameModal()">✕</button></div>
+    <div class="edit-field"><label>Ваше имя</label><input type="text" id="nameInput" value="—"></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeNameModal()">Отмена</button><button class="btn-save" onclick="saveName()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="gradeModalOverlay" onclick="if(event.target===this)closeGradeModal()">
+  <div class="modal" id="gradeModalContent"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDvCo1SLfT2RXPRhfK2CMzBOHQM1b_ZkA",
+  authDomain: "melenium-b5be1.firebaseapp.com",
+  projectId: "melenium-b5be1",
+  storageBucket: "melenium-b5be1.firebasestorage.app",
+  messagingSenderId: "2868066213946",
+  appId: "1:2868066213946:web:6cb9dda8a012c1f3d50403"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+function getDeviceId() {
+  let id = localStorage.getItem('device_id');
+  if (!id) {
+    id = 'dev_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    localStorage.setItem('device_id', id);
+  }
+  return id;
+}
+
+async function checkPassword() {
+  const input = document.getElementById('lockPasswordInput').value.trim().toLowerCase();
+  const errorEl = document.getElementById('lockError');
+  const btn = document.getElementById('lockBtn');
+  
+  if (!input) { errorEl.textContent = 'Введите код'; return; }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Проверка...';
+  errorEl.textContent = '';
+  
+  try {
+    const codeRef = doc(db, 'codes', input);
+    const codeSnap = await getDoc(codeRef);
+    
+    if (!codeSnap.exists()) {
+      errorEl.textContent = 'Недействительный код';
+      document.getElementById('lockPasswordInput').classList.add('error');
+      setTimeout(() => document.getElementById('lockPasswordInput').classList.remove('error'), 400);
+      btn.disabled = false;
+      btn.textContent = 'Разблокировать';
+      return;
+    }
+    
+    const codeData = codeSnap.data();
+    const deviceId = getDeviceId();
+    
+    if (codeData.used) {
+      if (codeData.deviceId === deviceId) {
+        unlockDevice();
+        unlockApp();
+      } else {
+        errorEl.textContent = 'Этот код уже использован';
+        btn.disabled = false;
+        btn.textContent = 'Разблокировать';
+      }
+      return;
+    }
+    
+    await updateDoc(codeRef, {
+      used: true,
+      deviceId: deviceId,
+      activatedAt: serverTimestamp()
+    });
+    
+    unlockDevice();
+    unlockApp();
+    
+  } catch (error) {
+    console.error(error);
+    errorEl.textContent = 'Ошибка сети. Проверьте интернет.';
+    btn.disabled = false;
+    btn.textContent = 'Разблокировать';
+  }
+}
+
+function unlockDevice() { localStorage.setItem('device_unlocked', 'true'); }
+function unlockApp() {
+  document.getElementById('lockScreen').classList.add('hidden');
+  document.getElementById('lockScreen').style.display = 'none';
+}
+
+window.checkPassword = checkPassword;
+
+window.addEventListener('load', () => {
+  const lockInput = document.getElementById('lockPasswordInput');
+  lockInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
+  if (localStorage.getItem('device_unlocked') === 'true') unlockApp();
+});
+</script>
+
+<script>
+const houseIcon = `<svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9v9a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2v-9z"/></svg>`;
+const runIcon = `<svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>`;
+
+const scheduleData = {
+  '2026-09-22': [
+    { num: 1, start: '09:30', end: '10:15', room: '402', subject: 'Программирование', homework: null },
+    { breakTime: 20, breakEnd: '10:35' },
+    { num: 2, start: '10:35', end: '11:20', room: '206', subject: 'Геометрия', homework: 'Задача № 6а-8а', pending: '1 для выполнения', pendingColor: 'orange' },
+    { breakTime: 20, breakEnd: '11:40' },
+    { num: 3, start: '11:40', end: '12:25', room: '311', subject: 'Физика', homework: null },
+    { breakTime: 10, breakEnd: '12:35' },
+    { num: 4, start: '12:35', end: '13:20', room: '206', subject: 'Алгебра и начала математического анализа', homework: null }
+  ]
+};
+
+const gradesData = {
+  'Физическая культура': [{grade:5, date:'18.09', desc:'Тест'}],
+  'Информатика': [{grade:3, date:'16.09', desc:'Задачи'}],
+  'Геометрия': [{grade:2, date:'16.09', desc:'Задачи'}]
+};
+
+const tasksData = {
+  '2026-09-22': [
+    { subject: 'Геометрия', text: 'Выполнить № 6а-8а', done: false, pending: 1 }
+  ]
+};
+
+let currentWeekStart = new Date(2026, 8, 22);
+let selectedDate = new Date(2026, 8, 22);
+let currentGradeView = 'date';
+
+const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+const monthNamesGen = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const dayNames = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+
+function getDateKey(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function isSameDay(a, b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+
+function renderCalendar() {
+  document.getElementById('monthBtn').textContent = 'Сентябрь';
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart); d.setDate(currentWeekStart.getDate() + i);
+    let cls = 'day-number';
+    if (isSameDay(d, selectedDate)) cls += ' selected';
+    if (i >= 5 && !isSameDay(d, selectedDate)) cls += ' weekend';
+    html += `<div class="calendar-day" onclick="selectDate(${d.getFullYear()},${d.getMonth()},${d.getDate()})"><div class="day-name">${dayNames[i]}</div><div class="${cls}">${d.getDate()}</div></div>`;
+  }
+  document.getElementById('calendarWeek').innerHTML = html;
+}
+
+function selectDate(y, m, d) { selectedDate = new Date(y, m, d); renderCalendar(); renderSchedule(); }
+function goToday() { renderCalendar(); renderSchedule(); }
+function changeWeek(delta) { currentWeekStart.setDate(currentWeekStart.getDate() + delta*7); selectedDate = new Date(currentWeekStart); renderCalendar(); renderCurrentPage(); }
+
+function renderSchedule() {
+  const schedule = scheduleData[getDateKey(selectedDate)] || [];
+  const c = document.getElementById('schedule');
+  if (schedule.length === 0) { c.innerHTML = `<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Нет уроков</div></div>`; return; }
+  let html = '';
+  schedule.forEach(item => {
+    if (item.breakTime !== undefined) {
+      html += `<div class="break-row"><div class="break-left"><span class="break-icon">${runIcon}</span>Перемена ${item.breakTime} мин</div><span>${item.breakEnd||''}</span></div>`;
+    } else {
+      let hw = item.homework 
+        ? `<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div><div class="homework-title">Домашнее задание</div><div class="homework-text">${item.homework}</div>${item.pending?`<div class="homework-pending ${item.pendingColor||''}">${item.pending}</div>`:''}</div></div>`
+        : `<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-title">Домашнее задание не задано</div></div>`;
+      html += `<div class="lesson-card"><div class="lesson-info"><span>${item.num} урок</span><span>${item.start}–${item.end}</span><span>каб.${item.room}</span></div><div class="lesson-subject">${item.subject}</div>${hw}</div>`;
+    }
+  });
+  c.innerHTML = html;
+}
+
+function renderTasks() {
+  const c = document.getElementById('tasksContent');
+  const end = new Date(currentWeekStart); end.setDate(currentWeekStart.getDate()+6);
+  let html = `<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${currentWeekStart.getDate()} сен – ${end.getDate()} сен</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  let has = false;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart); d.setDate(currentWeekStart.getDate()+i);
+    const tasks = tasksData[getDateKey(d)] || [];
+    if (tasks.length === 0) continue;
+    has = true;
+    html += `<div class="date-group"><div class="date-group-header"><div><div class="date-group-header-title">${d.getDate()} ${monthNamesGen[d.getMonth()].toUpperCase()}</div><div class="date-group-sub">${['вс','пн','вт','ср','чт','пт','сб'][d.getDay()]}</div></div></div>`;
+    const grouped = {};
+    tasks.forEach((t, idx) => { if (!grouped[t.subject]) grouped[t.subject]=[]; grouped[t.subject].push({...t, idx}); });
+    Object.keys(grouped).forEach(subj => {
+      html += `<div class="task-subject-name">${subj}</div>`;
+      grouped[subj].forEach(t => {
+        html += `<div class="task-item"><div class="task-item-checkbox ${t.done?'checked':''}" onclick="toggleTask('${getDateKey(d)}',${t.idx})"></div><div style="flex:1"><div class="task-item-text ${t.done?'done':''}">${t.text}</div>${t.pending?`<div class="task-item-pending">${t.pending} для выполнения</div>`:''}</div></div>`;
+      });
+    });
+    html += `</div>`;
+  }
+  if (!has) html += `<div class="empty-day"><div class="empty-emoji"></div><div class="empty-title">Нет заданий</div></div>`;
+  c.innerHTML = html;
+}
+
+function toggleTask(key, idx) { if (tasksData[key]) { tasksData[key][idx].done = !tasksData[key][idx].done; renderTasks(); } }
+
+function renderGradesByDate() {
+  const c = document.getElementById('gradesContent');
+  const end = new Date(currentWeekStart); end.setDate(currentWeekStart.getDate()+6);
+  let html = `<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${currentWeekStart.getDate()} сен – ${end.getDate()} сен</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  const week = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart); d.setDate(currentWeekStart.getDate()+i);
+    const day = [];
+    Object.keys(gradesData).forEach(subj => {
+      gradesData[subj].forEach((g, idx) => {
+        if (g.date === `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}`) day.push({...g, subject: subj, idx});
+      });
+    });
+    if (day.length) week.push({date: d, grades: day});
+  }
+  if (week.length === 0) html += `<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Нет оценок</div></div>`;
+  else week.forEach(w => {
+    const isToday = isSameDay(w.date, new Date(2026,8,22));
+    html += `<div class="date-group ${isToday?'today':''}"><div class="date-group-header"><div><div class="date-group-header-title">${w.date.getDate()} ${monthNamesGen[w.date.getMonth()].toUpperCase()}</div></div></div><div class="date-group-sub">${isToday?'сегодня':''}</div>`;
+    w.grades.forEach(g => {
+      html += `<div class="grade-row"><div class="grade-box"><span class="grade-val">${g.grade}</span></div><div class="grade-row-info"><div class="grade-row-subject">${g.subject}</div><div class="grade-row-desc">${g.desc||''}</div></div></div>`;
+    });
+    html += `</div>`;
+  });
+  c.innerHTML = html;
+}
+
+function renderGradesBySubject() {
+  const c = document.getElementById('gradesContent');
+  let html = '';
+  Object.keys(gradesData).sort().forEach(subj => {
+    const grades = gradesData[subj];
+    const avg = grades.reduce((s,g)=>s+g.grade,0)/grades.length;
+    let text = '', pct = 0;
+    if (avg >= 4.5) { text = 'цель достигнута'; pct = 100; }
+    else if (avg >= 3.5) { text = `до 4: нужно ${Math.ceil((4*grades.length - grades.reduce((s,g)=>s+g.grade,0))/(5-4))}`; pct = ((avg-3))*100; }
+    else { text = `до 3: нужно ${Math.ceil((3*grades.length - grades.reduce((s,g)=>s+g.grade,0))/(5-3))}`; pct = ((avg-2))*100; }
+    pct = Math.min(100, Math.max(0, pct));
+    html += `<div class="subject-card"><div class="subject-card-top"><div class="subject-name">${subj}</div><div class="subject-avg-box">${avg.toFixed(2)}</div></div><div class="subject-semester">1 полугодие</div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div class="progress-text ${text==='цель достигнута'?'achieved':''}">${text}</div></div>`;
+  });
+  c.innerHTML = html;
+}
+
+function renderCurrentPage() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  if (active.id === 'pageSchedule') renderSchedule();
+  else if (active.id === 'pageGrades') currentGradeView === 'date' ? renderGradesByDate() : renderGradesBySubject();
+  else if (active.id === 'pageTasks') renderTasks();
+}
+
+function switchPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('calendarBlock').style.display = page === 'schedule' ? 'block' : 'none';
+  document.getElementById('filtersBlock').style.display = page === 'schedule' ? 'flex' : 'none';
+  document.getElementById('addGradeFab').style.display = page === 'grades' ? 'flex' : 'none';
+  document.getElementById('segmentedControl').style.display = page === 'grades' ? 'flex' : 'none';
+  document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+  btn.classList.add('active');
+  renderCurrentPage();
+}
+
+function switchGradeView(view, btn) {
+  currentGradeView = view;
+  document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCurrentPage();
+}
+
+function openEditModal() { document.getElementById('modalOverlay').classList.add('show'); }
+function closeEditModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+function openNameModal() { document.getElementById('nameInput').value = document.getElementById('userName').textContent; document.getElementById('nameModalOverlay').classList.add('show'); }
+function closeNameModal() { document.getElementById('nameModalOverlay').classList.remove('show'); }
+function saveName() { const n = document.getElementById('nameInput').value.trim(); if (n) { document.getElementById('userName').textContent = n; closeNameModal(); } }
+function openGradeModal() { document.getElementById('gradeModalContent').innerHTML = '<h3>Скоро</h3><div class="modal-actions"><button class="btn-reset" onclick="closeGradeModal()">Закрыть</button></div>'; document.getElementById('gradeModalOverlay').classList.add('show'); }
+function closeGradeModal() { document.getElementById('gradeModalOverlay').classList.remove('show'); }
+function resetToDefault() { closeEditModal(); }
+function saveSchedule() { closeEditModal(); }
+function addNewLesson() {}
+
+renderCalendar();
+renderSchedule();
+</script>
+</body>
+</html>
