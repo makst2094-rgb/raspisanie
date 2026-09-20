@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Дневник</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Helvetica Neue',sans-serif;background:#f2f3f8;color:#000;max-width:430px;margin:0 auto;min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.lock-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a3e 0%,#2a2a5e 50%,#3d3d7a 100%);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px}
+.lock-screen.hidden{display:none!important}
+.lock-logo{width:80px;height:80px;border-radius:20px;background:linear-gradient(145deg,#4a6cf7,#7c5cfc);display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(74,108,247,0.4)}
+.lock-logo svg{width:40px;height:40px;fill:white}
+.lock-title{font-size:28px;font-weight:700;color:white;margin-bottom:8px;letter-spacing:-0.5px}
+.lock-subtitle{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:12px;text-align:center}
+.lock-days-left{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:24px;text-align:center}
+.lock-input-wrapper{width:100%;max-width:320px;position:relative;margin-bottom:16px}
+.lock-input{width:100%;padding:16px;border:2px solid rgba(255,255,255,0.2);border-radius:14px;background:rgba(255,255,255,0.1);color:white;font-size:16px;font-family:inherit;outline:none;transition:all 0.2s}
+.lock-input::placeholder{color:rgba(255,255,255,0.4)}
+.lock-input:focus{border-color:#4a6cf7;background:rgba(255,255,255,0.15)}
+.lock-input.error{border-color:#ff3b30;animation:shake 0.4s ease}
+.lock-btn{width:100%;max-width:320px;padding:16px;background:#4a6cf7;color:white;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:all 0.2s;margin-bottom:12px}
+.lock-btn:active{transform:scale(0.97);background:#3a5ce7}
+.lock-btn:disabled{opacity:0.5;cursor:not-allowed}
+.lock-error{color:#ff6b6b;font-size:13px;min-height:18px;text-align:center;margin-bottom:8px}
+.lock-hint{color:rgba(255,255,255,0.4);font-size:12px;text-align:center}
+.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardAppear{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(0.3)}50%{opacity:1;transform:scale(1.05)}70%{transform:scale(0.95)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes fabAppear{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes progressGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes slideInPage{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInFromBottom{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;animation:fadeInDown 0.4s ease}
+.avatar-wrapper{position:relative;cursor:pointer;transition:transform 0.2s}
+.avatar-wrapper:active{transform:scale(0.95)}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#1a1a3e,#2a2a5e,#3d3d7a);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.avatar-logo{display:grid;grid-template-columns:repeat(5,5px);grid-template-rows:repeat(5,5px);gap:1px}
+.avatar-logo .px{border-radius:1px}
+.px-1{background:#5b8def}.px-2{background:#4a7de0}.px-3{background:transparent}.px-4{background:#e85d75}.px-5{background:#d94f67}.px-6{background:#3d6fd4}.px-7{background:#2d5fc4}.px-8{background:#c44560}.px-9{background:#b53a55}
+.avatar-status{position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;background:#8e8e93;border-radius:50%;border:2.5px solid #f2f3f8}
+.user-info{flex:1;margin-left:12px;cursor:pointer}
+.user-name{font-size:16px;font-weight:600;color:#000}
+.user-status{font-size:13px;color:#8e8e93;margin-top:1px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:10px}
+.notification-btn{position:relative;background:none;border:none;cursor:pointer;padding:4px;transition:transform 0.2s}
+.notification-btn:active{transform:scale(0.9)}
+.notification-btn svg{width:26px;height:26px}
+.notification-badge{position:absolute;top:-6px;right:-10px;background:#e8303a;color:white;font-size:11px;font-weight:700;padding:2px 6px;border-radius:12px;min-width:22px;text-align:center;animation:pulse 2s infinite}
+.menu-btn{background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;transition:transform 0.2s}
+.menu-btn:active{transform:scale(0.9)}
+.menu-btn svg{width:24px;height:18px}
+.calendar{padding:6px 16px 12px}
+.calendar-week{display:flex;justify-content:space-between}
+.calendar-day{text-align:center;flex:1;cursor:pointer;transition:transform 0.15s}
+.calendar-day:active{transform:scale(0.92)}
+.day-name{font-size:13px;color:#8e8e93;margin-bottom:8px;font-weight:400}
+.day-number{font-size:19px;font-weight:400;color:#000;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:0 auto;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+.day-number.selected{background:#4a6cf7;color:white;font-weight:500;transform:scale(1.05)}
+.day-number.weekend{color:#e8303a}
+.day-number.selected.weekend{background:#4a6cf7;color:white}
+.filters{display:flex;align-items:center;gap:10px;padding:2px 16px 14px;animation:fadeIn 0.4s ease 0.1s both}
+.filter-btn{padding:9px 16px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:white;color:#000;box-shadow:0 1px 2px rgba(0,0,0,0.04);font-family:inherit;transition:transform 0.15s}
+.filter-btn:active{transform:scale(0.95)}
+.filter-icon-btn{width:40px;height:40px;border-radius:12px;border:none;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:auto;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform 0.15s}
+.filter-icon-btn:active{transform:scale(0.9)}
+.filter-icon-btn svg{width:22px;height:22px}
+.dots-btn{font-size:19px;letter-spacing:1px;color:#000;font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit}
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.3s ease}
+.page.slide-in{animation:slideInPage 0.3s ease}
+.schedule{padding:0 16px 100px}
+.lesson-card{background:white;border-radius:16px;padding:14px 18px 16px 20px;margin-bottom:2px;position:relative;opacity:0;animation:cardAppear 0.35s ease forwards;cursor:pointer;transition:transform 0.15s}
+.lesson-card:active{transform:scale(0.98)}
+.lesson-card:nth-child(1){animation-delay:0.05s}.lesson-card:nth-child(2){animation-delay:0.1s}.lesson-card:nth-child(3){animation-delay:0.15s}.lesson-card:nth-child(4){animation-delay:0.2s}.lesson-card:nth-child(5){animation-delay:0.25s}.lesson-card:nth-child(6){animation-delay:0.3s}.lesson-card:nth-child(7){animation-delay:0.35s}.lesson-card:nth-child(8){animation-delay:0.4s}.lesson-card:nth-child(9){animation-delay:0.45s}.lesson-card:nth-child(10){animation-delay:0.5s}.lesson-card:nth-child(11){animation-delay:0.55s}.lesson-card:nth-child(12){animation-delay:0.6s}.lesson-card:nth-child(13){animation-delay:0.65s}.lesson-card:nth-child(14){animation-delay:0.7s}.lesson-card:nth-child(15){animation-delay:0.75s}
+.lesson-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;background:#a0a0a5;border-radius:0 4px 4px 0}
+.lesson-info{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:14px;color:#8e8e93;font-weight:400;flex-wrap:wrap}
+.lesson-subject{font-size:18px;font-weight:600;color:#000;margin-bottom:10px;line-height:1.3;letter-spacing:-0.2px}
+.lesson-subject.gray{color:#6e6e73}
+.lesson-badge{position:absolute;top:14px;right:14px;background:#e8e8ed;border-radius:10px;padding:4px 8px;display:flex;align-items:center;gap:4px}
+.lesson-badge .badge-num{font-size:15px;font-weight:600;color:#000}
+.lesson-badge .badge-sub{font-size:10px;color:#8e8e93;font-weight:500}
+.lesson-badge svg{width:14px;height:14px;fill:#8e8e93}
+.homework-section{display:flex;align-items:flex-start;gap:8px;margin-top:4px}
+.homework-icon{margin-top:1px;flex-shrink:0}
+.homework-icon svg{width:20px;height:20px;fill:#8e8e93}
+.homework-content{flex:1}
+.homework-title{font-size:15px;font-weight:500;color:#000;margin-bottom:3px}
+.homework-text{font-size:14px;color:#6e6e73;line-height:1.4;font-weight:400}
+.homework-pending{font-size:13px;font-weight:500;margin-top:4px}
+.homework-pending.orange{color:#ff6b00}
+.homework-pending.purple{color:#9b59b6}
+.break-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:14px;color:#6e6e73;font-weight:400;opacity:0;animation:cardAppear 0.3s ease forwards}
+.break-left{display:flex;align-items:center;gap:6px}
+.break-icon svg{width:20px;height:20px;fill:#6e6e73}
+.section-title{font-size:18px;font-weight:600;color:#000;margin:12px 0 8px;letter-spacing:-0.2px;opacity:0;animation:cardAppear 0.3s ease forwards}
+.empty-day{text-align:center;padding:80px 20px 60px;animation:fadeIn 0.4s ease}
+.empty-emoji{font-size:64px;margin-bottom:16px;animation:bounceIn 0.5s ease}
+.empty-title{font-size:18px;font-weight:600;color:#000;margin-bottom:8px}
+.empty-subtitle{font-size:14px;color:#8e8e93;line-height:1.4;margin-bottom:24px;font-weight:400}
+.empty-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:white;border:none;padding:16px 24px;border-radius:14px;font-size:15px;font-weight:600;color:#4a6cf7;cursor:pointer;width:100%;box-shadow:0 1px 3px rgba(0,0,0,0.06);font-family:inherit;transition:transform 0.15s}
+.empty-btn:active{transform:scale(0.97)}
+.empty-btn svg{width:22px;height:22px}
+.lesson-detail-page{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;background:#7c5cfc;z-index:500;overflow-y:auto;display:none}
+.lesson-detail-page.active{display:block;animation:slideInFromBottom 0.3s ease}
+.lesson-detail-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+.back-btn{background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px;transition:transform 0.15s}
+.back-btn:active{transform:scale(0.9)}
+.lesson-detail-title{color:white;font-size:17px;font-weight:600}
+.lesson-detail-spacer{width:40px}
+.lesson-detail-info{text-align:center;padding:8px 16px 16px}
+.lesson-detail-date{color:rgba(255,255,255,0.8);font-size:15px;font-weight:400;margin-bottom:8px}
+.lesson-detail-subject{color:white;font-size:28px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;justify-content:center;gap:10px}
+.play-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s}
+.play-btn:active{transform:scale(0.9)}
+.play-btn svg{width:16px;height:16px;fill:white}
+.lesson-detail-actions{display:flex;gap:10px;padding:0 16px 16px}
+.action-btn{flex:1;background:rgba(255,255,255,0.15);border:none;border-radius:14px;padding:14px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:transform 0.15s,background 0.15s}
+.action-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.25)}
+.action-icon{width:40px;height:40px;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.action-icon svg{width:22px;height:22px}
+.action-text{color:white;font-size:14px;font-weight:500;text-align:left}
+.lesson-detail-tabs{display:flex;background:rgba(255,255,255,0.1);border-radius:12px;margin:0 16px 16px;padding:3px}
+.tab-btn{flex:1;padding:10px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:15px;font-weight:600;cursor:pointer;border-radius:10px;font-family:inherit;transition:all 0.25s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab-btn.active{background:white;color:#7c5cfc}
+.tab-badge{background:rgba(255,255,255,0.3);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.tab-btn.active .tab-badge{background:#7c5cfc;color:white}
+.lesson-detail-content{background:#f2f3f8;border-radius:20px 20px 0 0;min-height:calc(100vh - 340px);padding:20px 16px 100px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn 0.25s ease}
+.topic-card{background:white;border-radius:16px;padding:18px;margin-bottom:16px}
+.topic-label{font-size:12px;font-weight:500;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.topic-edit-btn{background:none;border:none;color:#7c5cfc;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px}
+.topic-text{font-size:16px;font-weight:500;color:#000;line-height:1.4}
+.topic-hint{background:#7c5cfc;border-radius:14px;padding:14px 16px;margin-top:12px;display:flex;align-items:center;justify-content:space-between}
+.topic-hint-text{color:white;font-size:14px;font-weight:400;line-height:1.3}
+.topic-hint-close{background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:4px}
+.section-label{font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px}
+.teacher-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.15s}
+.teacher-card:active{background:#f9f9fb}
+.teacher-name{font-size:16px;font-weight:500;color:#000;flex:1}
+.result-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.result-mark{width:44px;height:44px;border-radius:12px;background:#f2f3f8;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#000}
+.result-text{font-size:15px;font-weight:400;color:#000}
+.material-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px}
+.material-title{font-size:16px;font-weight:500;color:#000;margin-bottom:4px}
+.material-type{font-size:14px;color:#8e8e93;font-weight:400;margin-bottom:12px}
+.material-btn{width:100%;padding:14px;background:#e8e6ff;border:none;border-radius:12px;font-size:15px;font-weight:600;color:#4a3fbf;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+.material-btn:active{transform:scale(0.97)}
+.task-card{background:white;border-radius:16px;padding:18px;margin-bottom:16px}
+.task-checkbox{width:24px;height:24px;border-radius:6px;border:2px solid #d0d0d5;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;flex-shrink:0;cursor:pointer;transition:all 0.2s}
+.task-checkbox.checked{background:#7c5cfc;border-color:#7c5cfc}
+.task-checkbox.checked::after{content:'✓';color:white;font-size:14px;font-weight:700}
+.task-text-row{display:flex;align-items:flex-start}
+.task-text{font-size:15px;font-weight:500;color:#000;line-height:1.4;flex:1}
+.task-edit-btn{background:none;border:none;color:#7c5cfc;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px;margin-top:8px}
+.task-date{font-size:13px;color:#8e8e93;margin-top:12px;font-weight:400;line-height:1.4}
+.task-share-btn{width:100%;padding:14px;background:#e8e6ff;border:none;border-radius:12px;font-size:15px;font-weight:600;color:#4a3fbf;cursor:pointer;font-family:inherit;margin-top:14px;transition:transform 0.15s}
+.task-share-btn:active{transform:scale(0.97)}
+.answer-section-label{font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px}
+.answer-card{background:white;border-radius:16px;padding:24px 16px;text-align:center}
+.answer-text{font-size:14px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px}
+.grades-page,.tasks-page{padding:0 16px 140px}
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.week-nav-btn{background:white;border:none;width:40px;height:40px;border-radius:12px;font-size:19px;font-weight:600;color:#4a6cf7;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform 0.15s}
+.week-nav-btn:active{transform:scale(0.9)}
+.week-nav-label{flex:1;text-align:center;background:white;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.today-btn{background:white;border:none;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;color:#000;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.04);font-family:inherit;transition:transform 0.15s}
+.today-btn:active{transform:scale(0.95)}
+.date-group{background:white;border-radius:16px;padding:16px;margin-bottom:12px;opacity:0;animation:cardAppear 0.35s ease forwards}
+.date-group:nth-child(2){animation-delay:0.05s}.date-group:nth-child(3){animation-delay:0.1s}.date-group:nth-child(4){animation-delay:0.15s}
+.date-group.today{border:2px solid #4a6cf7;padding:14px}
+.date-group-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.date-group-header-left{flex:1}
+.date-group-header-title{font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px}
+.date-group-sub{font-size:12px;color:#8e8e93;margin-bottom:12px;font-weight:400}
+.share-btn{background:none;border:none;cursor:pointer;padding:4px;transition:transform 0.15s}
+.share-btn:active{transform:scale(0.9)}
+.share-btn svg{width:20px;height:20px;fill:#8e8e93}
+.task-subject-name{font-size:17px;font-weight:600;color:#000;margin:14px 0 10px;letter-spacing:-0.2px}
+.task-subject-name:first-child{margin-top:4px}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
+.task-item-checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #d0d0d5;flex-shrink:0;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.task-item-checkbox.checked{background:#000;border-color:#000}
+.task-item-checkbox.checked::after{content:'✓';color:white;font-size:13px;font-weight:700}
+.task-item-text{flex:1;font-size:15px;font-weight:400;color:#000;line-height:1.4}
+.task-item-text.done{color:#8e8e93;text-decoration:line-through}
+.task-item-pending{font-size:13px;color:#8e8e93;margin-top:4px;font-weight:400}
+.grade-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #f0f0f5;cursor:pointer;transition:background 0.15s}
+.grade-row:active{background:#f9f9fb;border-radius:8px}
+.grade-row:last-child{border-bottom:none}
+.grade-box{width:42px;height:42px;background:#e8e8ed;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;transition:transform 0.2s}
+.grade-row:active .grade-box{transform:scale(0.92)}
+.grade-box .grade-val{font-size:19px;font-weight:500;color:#000}
+.grade-box .grade-idx{position:absolute;bottom:2px;right:4px;font-size:9px;color:#8e8e93;font-weight:400}
+.grade-row-info{flex:1;min-width:0}
+.grade-row-subject{font-size:15px;font-weight:400;color:#000;margin-bottom:2px}
+.grade-row-desc{font-size:12px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.grade-row-actions{display:flex;align-items:center;gap:8px}
+.chat-icon-small svg{width:20px;height:20px;fill:#8e8e93}
+.arrow-right{font-size:17px;color:#c7c7cc}
+.subject-card{background:white;border-radius:16px;padding:16px;margin-bottom:10px;opacity:0;animation:cardAppear 0.35s ease forwards}
+.subject-card:nth-child(1){animation-delay:0.05s}.subject-card:nth-child(2){animation-delay:0.1s}.subject-card:nth-child(3){animation-delay:0.15s}.subject-card:nth-child(4){animation-delay:0.2s}.subject-card:nth-child(5){animation-delay:0.25s}.subject-card:nth-child(6){animation-delay:0.3s}.subject-card:nth-child(7){animation-delay:0.35s}.subject-card:nth-child(8){animation-delay:0.4s}.subject-card:nth-child(9){animation-delay:0.45s}.subject-card:nth-child(10){animation-delay:0.5s}.subject-card:nth-child(11){animation-delay:0.55s}.subject-card:nth-child(12){animation-delay:0.6s}.subject-card:nth-child(13){animation-delay:0.65s}.subject-card:nth-child(14){animation-delay:0.7s}.subject-card:nth-child(15){animation-delay:0.75s}.subject-card:nth-child(16){animation-delay:0.8s}.subject-card:nth-child(17){animation-delay:0.85s}.subject-card:nth-child(18){animation-delay:0.9s}
+.subject-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px}
+.subject-name{font-size:15px;font-weight:400;color:#000;flex:1;padding-right:12px;line-height:1.3}
+.subject-avg-box{width:54px;height:42px;border:1.5px dashed #c7c7cc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:#000;flex-shrink:0;position:relative}
+.subject-avg-box .trend-down{position:absolute;left:-14px;top:50%;transform:translateY(-50%);color:#ff3b30;font-size:12px}
+.subject-semester{font-size:12px;color:#8e8e93;margin-bottom:10px;font-weight:400}
+.progress-bar{width:100%;height:8px;background:#e8e8ed;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;background:#00a82d;border-radius:4px;animation:progressGrow 0.6s ease forwards;transform-origin:left}
+.progress-text{font-size:12px;color:#8e8e93;font-weight:400}
+.progress-text.achieved{color:#00a82d;font-weight:400}
+.add-grade-fab{position:fixed;bottom:140px;right:18px;width:50px;height:50px;border-radius:50%;background:#4a6cf7;color:white;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(74,108,247,0.35);z-index:50;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:300;transition:transform 0.2s;animation:fabAppear 0.4s ease}
+.add-grade-fab:active{transform:scale(0.9)}
+.segmented-control{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;background:#e8e8ed;border-radius:12px;display:flex;padding:3px;z-index:90;animation:slideUp 0.3s ease}
+.segment-btn{flex:1;padding:10px;background:transparent;border:none;font-size:14px;font-weight:600;color:#8e8e93;cursor:pointer;border-radius:10px;font-family:inherit;transition:all 0.25s ease}
+.segment-btn.active{background:white;color:#000;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:white;border-top:0.5px solid #e5e5ea;display:flex;justify-content:space-around;padding:6px 0 26px;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;padding:4px 10px;transition:transform 0.15s}
+.nav-item:active{transform:scale(0.9)}
+.nav-icon{width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:26px;height:26px}
+.nav-icon svg path,.nav-icon svg rect,.nav-icon svg circle,.nav-icon svg line,.nav-icon svg polygon{fill:none;stroke:#8e8e93;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:all 0.2s}
+.nav-item.active .nav-icon svg path,.nav-item.active .nav-icon svg rect,.nav-item.active .nav-icon svg circle,.nav-item.active .nav-icon svg polygon{stroke:none;fill:#000}
+.nav-icon-check{width:26px;height:26px;border-radius:50%;border:2px solid #8e8e93;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.nav-icon-check svg{width:14px;height:14px}
+.nav-icon-check svg path{stroke:#8e8e93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-item.active .nav-icon-check{background:#000;border-color:#000}
+.nav-item.active .nav-icon-check svg path{stroke:white}
+.nav-label{font-size:10px;color:#8e8e93;font-weight:500;transition:color 0.2s}
+.nav-item.active .nav-label{color:#000;font-weight:600}
+.grade-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:600;align-items:flex-end;justify-content:center;opacity:0;transition:opacity 0.25s ease}
+.grade-modal-overlay.show{display:flex;opacity:1}
+.grade-modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px;max-height:80vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)}
+.grade-modal-overlay.show .grade-modal{transform:translateY(0)}
+.grade-modal h3{font-size:18px;font-weight:500;margin-bottom:16px}
+.subject-list-item{padding:14px;background:#f9f9fb;border-radius:12px;margin-bottom:8px;font-size:13px;font-weight:400;cursor:pointer;transition:background 0.15s,transform 0.15s}
+.subject-list-item:active{background:#e8e8ed;transform:scale(0.98)}
+.grade-select{display:flex;gap:10px;margin-bottom:16px}
+.grade-option{flex:1;padding:16px;border-radius:14px;border:2px solid #e5e5ea;background:white;font-size:21px;font-weight:500;cursor:pointer;text-align:center;font-family:inherit;transition:all 0.2s}
+.grade-option:active{transform:scale(0.92)}
+.grade-option.sel-5{border-color:#34c759;background:#34c759;color:white}
+.grade-option.sel-4{border-color:#4a6cf7;background:#4a6cf7;color:white}
+.grade-option.sel-3{border-color:#ff9500;background:#ff9500;color:white}
+.grade-option.sel-2{border-color:#ff3b30;background:#ff3b30;color:white}
+.grade-date-input,.grade-desc-input{width:100%;padding:12px 14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;background:#f9f9fb;font-family:inherit;margin-bottom:12px}
+.grade-modal-actions{display:flex;gap:10px}
+.grade-modal-actions button{flex:1;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+.grade-modal-actions button:active{transform:scale(0.95)}
+.grade-cancel{background:#f2f2f7;color:#000}
+.grade-confirm{background:#4a6cf7;color:white}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:700;align-items:flex-end;justify-content:center;opacity:0;transition:opacity 0.25s ease}
+.modal-overlay.show{display:flex;opacity:1}
+.modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto;padding:20px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1)}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h2{font-size:19px;font-weight:600}
+.modal-close{background:#f2f2f7;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s}
+.modal-close:active{transform:scale(0.9)}
+.edit-section{margin-bottom:20px}
+.edit-section h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.edit-field{margin-bottom:14px}
+.edit-field label{display:block;font-size:12px;color:#8e8e93;margin-bottom:6px;font-weight:500}
+.edit-field input,.edit-field textarea{width:100%;padding:12px 14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;background:#f9f9fb;font-family:inherit;transition:border-color 0.2s,background 0.2s;resize:vertical}
+.edit-field input:focus,.edit-field textarea:focus{outline:none;border-color:#4a6cf7;background:white}
+.lesson-edit-item{background:#f9f9fb;border-radius:12px;padding:14px;margin-bottom:10px}
+.lesson-edit-item .edit-label{font-size:12px;color:#8e8e93;margin-bottom:10px;font-weight:600}
+.lesson-edit-row{display:flex;gap:8px;margin-bottom:8px}
+.lesson-edit-row input{flex:1;padding:10px 12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:13px;background:white;font-family:inherit;transition:border-color 0.2s}
+.lesson-edit-row input:focus{outline:none;border-color:#4a6cf7}
+.delete-btn{width:40px;background:#ff3b30;color:white;border:none;border-radius:10px;font-size:15px;cursor:pointer;flex-shrink:0;transition:transform 0.15s}
+.delete-btn:active{transform:scale(0.9)}
+.add-lesson-btn{background:#f2f2f7;color:#4a6cf7;width:100%;padding:12px;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit;transition:transform 0.15s}
+.add-lesson-btn:active{transform:scale(0.97)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions button{flex:1;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+.modal-actions button:active{transform:scale(0.95)}
+.btn-reset{background:#f2f2f7;color:#000}
+.btn-save{background:#4a6cf7;color:white}
+.subscription-info{background:#f9f9fb;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.subscription-info-text{font-size:13px;color:#8e8e93}
+.subscription-info-days{font-size:14px;font-weight:600;color:#4a6cf7}
+.subscription-info-days.warning{color:#ff9500}
+.subscription-info-days.danger{color:#ff3b30}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg></div>
+  <div class="lock-title">Дневник</div>
+  <div class="lock-subtitle" id="lockSubtitle">Проверка устройства...</div>
+  <div class="lock-days-left" id="lockDaysLeft"></div>
+  <div class="lock-input-wrapper" id="lockInputWrapper" style="display:none">
+    <input type="text" class="lock-input" id="lockPasswordInput" placeholder="Код доступа" autocomplete="off">
+  </div>
+  <div class="lock-error" id="lockError"></div>
+  <button class="lock-btn" id="lockBtn" onclick="checkPassword()" style="display:none">Разблокировать</button>
+  <div class="lock-hint" id="lockHint" style="display:none">Код выдаётся после оплаты (доступ на 30 дней)</div>
+</div>
+
+<div class="header">
+  <div style="display:flex;align-items:center;flex:1;min-width:0;">
+    <div class="avatar-wrapper" onclick="openNameModal()">
+      <div class="avatar"><div class="avatar-logo">
+        <div class="px px-3"></div><div class="px px-1"></div><div class="px px-2"></div><div class="px px-3"></div><div class="px px-3"></div>
+        <div class="px px-1"></div><div class="px px-2"></div><div class="px px-7"></div><div class="px px-6"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-7"></div><div class="px px-4"></div><div class="px px-5"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-6"></div><div class="px px-8"></div><div class="px px-9"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div>
+      </div></div>
+      <div class="avatar-status"></div>
+    </div>
+    <div class="user-info" onclick="openNameModal()">
+      <div class="user-name" id="userName">—</div>
+      <div class="user-status">не в школе</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="notification-btn"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="notification-badge">99+</span></button>
+    <button class="menu-btn"><svg viewBox="0 0 24 18" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><line x1="2" y1="3" x2="22" y2="3"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="15" x2="22" y2="15"/></svg></button>
+  </div>
+</div>
+
+<div class="calendar" id="calendarBlock"><div class="calendar-week" id="calendarWeek"></div></div>
+<div class="filters" id="filtersBlock">
+  <button class="filter-btn" id="monthBtn">Сентябрь</button>
+  <button class="filter-btn active" onclick="goToday()">Сегодня</button>
+  <button class="filter-icon-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="#e8303a"/><path d="M14 2v6h6" fill="none" stroke="#e8303a" stroke-width="1.5"/><text x="7.5" y="18" font-size="6.5" font-weight="800" fill="white" font-family="sans-serif">PDF</text></svg></button>
+  <button class="filter-icon-btn dots-btn" onclick="openEditModal()">···</button>
+</div>
+
+<div class="page active" id="pageSchedule"><div class="schedule" id="schedule"></div></div>
+<div class="page" id="pageGrades"><div class="grades-page" id="gradesContent"></div></div>
+<div class="page" id="pageTasks"><div class="tasks-page" id="tasksContent"></div></div>
+
+<div class="lesson-detail-page" id="lessonDetailPage">
+  <div class="lesson-detail-header">
+    <button class="back-btn" onclick="closeLessonDetail()">‹</button>
+    <div class="lesson-detail-title">Урок</div>
+    <div class="lesson-detail-spacer"></div>
+  </div>
+  <div class="lesson-detail-info">
+    <div class="lesson-detail-date" id="ldDate"></div>
+    <div class="lesson-detail-subject"><span id="ldSubject"></span><button class="play-btn"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button></div>
+  </div>
+  <div class="lesson-detail-actions">
+    <button class="action-btn"><div class="action-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="#7c5cfc"/><path d="M2 12l10 5 10-5" stroke="#7c5cfc" stroke-width="2" fill="none"/><path d="M2 17l10 5 10-5" stroke="#7c5cfc" stroke-width="2" fill="none"/></svg></div><div class="action-text">Подборки к теме</div></button>
+    <button class="action-btn"><div class="action-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#7c5cfc"/><path d="M12 16v-4M12 8h.01" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div><div class="action-text">Информация об уроке</div></button>
+  </div>
+  <div class="lesson-detail-tabs">
+    <button class="tab-btn active" onclick="switchLessonTab('lesson', this)">Урок</button>
+    <button class="tab-btn" onclick="switchLessonTab('tasks', this)">Задания <span class="tab-badge" id="taskBadge">1</span></button>
+  </div>
+  <div class="lesson-detail-content">
+    <div class="tab-content active" id="tabLesson">
+      <div class="topic-card">
+        <div class="topic-label">Тема <button class="topic-edit-btn" onclick="editTopic()">Изменить</button></div>
+        <div class="topic-text" id="ldTopic"></div>
+        <div class="topic-hint" id="topicHint"><div class="topic-hint-text">Интересна тема? В подборках есть разные материалы по этой теме!</div><button class="topic-hint-close" onclick="document.getElementById('topicHint').style.display='none'">✕</button></div>
+      </div>
+      <div class="section-label">Учитель</div>
+      <div class="teacher-card" onclick="editTeacher()">
+        <div class="teacher-name" id="ldTeacher"></div>
+      </div>
+      <div class="section-label">Результаты урока</div>
+      <div class="result-card"><div class="result-mark">Н</div><div class="result-text">Отсутствие на уроке</div></div>
+      <div class="section-label">Материалы для изучения <span style="background:#7c5cfc;color:white;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-left:6px;vertical-align:middle">1</span></div>
+      <div class="material-card"><div class="material-title" id="ldMaterial"></div><div class="material-type">Видеоурок</div><button class="material-btn">Изучить</button></div>
+    </div>
+    <div class="tab-content" id="tabTasks">
+      <div class="task-card">
+        <div class="task-text-row"><div class="task-checkbox" onclick="this.classList.toggle('checked')"></div><div class="task-text" id="ldTaskText"></div></div>
+        <button class="task-edit-btn" onclick="editTask()">Изменить задание</button>
+        <div class="task-date" id="ldTaskDate"></div>
+        <button class="task-share-btn">Поделиться</button>
+      </div>
+      <div class="answer-section-label">Ответ на задание (необязательно)</div>
+      <div class="answer-card"><div class="answer-text">Файлы не добавлены</div></div>
+    </div>
+  </div>
+</div>
+
+<button class="add-grade-fab" id="addGradeFab" style="display:none" onclick="openGradeModal()">+</button>
+<div class="segmented-control" id="segmentedControl" style="display:none">
+  <button class="segment-btn active" onclick="switchGradeView('date', this)">По дате</button>
+  <button class="segment-btn" onclick="switchGradeView('subject', this)">По предмету</button>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('schedule', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></svg></span><span class="nav-label">Расписание</span></button>
+  <button class="nav-item" onclick="switchPage('grades', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="nav-label">Оценки</span></button>
+  <button class="nav-item" onclick="switchPage('tasks', this)"><span class="nav-icon"><span class="nav-icon-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span></span><span class="nav-label">Задания</span></button>
+  <button class="nav-item" onclick="switchPage('school', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-label">Школа</span></button>
+  <button class="nav-item" onclick="switchPage('portfolio', this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/></svg></span><span class="nav-label">Портфолио</span></button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Настройки</h2><button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="edit-section">
+      <h3>📅 Подписка</h3>
+      <div class="subscription-info">
+        <div class="subscription-info-text">Осталось дней:</div>
+        <div class="subscription-info-days" id="daysLeftDisplay">—</div>
+      </div>
+    </div>
+    <div class="edit-section"><h3>Параметры расписания</h3>
+      <div class="edit-field"><label>Начало первого урока</label><input type="time" id="firstLessonStart" value="08:30"></div>
+      <div class="edit-field"><label>Длительность урока (минут)</label><input type="number" id="lessonDuration" value="45" min="20" max="90"></div>
+    </div>
+    <div class="edit-section"><h3>Уроки и перемены</h3><div id="lessonsEditor"></div><button class="add-lesson-btn" onclick="addNewLesson()">+ Добавить урок</button></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="resetToDefault()">Сбросить</button><button class="btn-save" onclick="saveSchedule()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="nameModalOverlay" onclick="if(event.target===this)closeNameModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить имя</h2><button class="modal-close" onclick="closeNameModal()">✕</button></div>
+    <div class="edit-field"><label>Ваше имя</label><input type="text" id="nameInput" value="—"></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeNameModal()">Отмена</button><button class="btn-save" onclick="saveName()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="teacherModalOverlay" onclick="if(event.target===this)closeTeacherModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить учителя</h2><button class="modal-close" onclick="closeTeacherModal()">✕</button></div>
+    <div class="edit-field"><label>ФИО учителя</label><input type="text" id="teacherInput"></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTeacherModal()">Отмена</button><button class="btn-save" onclick="saveTeacher()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="topicModalOverlay" onclick="if(event.target===this)closeTopicModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить тему</h2><button class="modal-close" onclick="closeTopicModal()">✕</button></div>
+    <div class="edit-field"><label>Тема урока</label><textarea id="topicInput" rows="3"></textarea></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTopicModal()">Отмена</button><button class="btn-save" onclick="saveTopic()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="taskModalOverlay" onclick="if(event.target===this)closeTaskModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить задание</h2><button class="modal-close" onclick="closeTaskModal()">✕</button></div>
+    <div class="edit-field"><label>Текст задания</label><textarea id="taskInput" rows="4"></textarea></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTaskModal()">Отмена</button><button class="btn-save" onclick="saveTask()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="grade-modal-overlay" id="gradeModalOverlay" onclick="if(event.target===this)closeGradeModal()">
+  <div class="grade-modal" id="gradeModalContent"></div>
+</div>
+
+<!-- Firebase SDK через обычный script тег -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+// Firebase конфигурация
+const firebaseConfig = {
+  apiKey: "AIzaSyDvCo1SLfT2RXPRhfK2CMzBOHQM1b_ZkA",
+  authDomain: "melenium-b5be1.firebaseapp.com",
+  projectId: "melenium-b5be1",
+  storageBucket: "melenium-b5be1.firebasestorage.app",
+  messagingSenderId: "2868066213946",
+  appId: "1:2868066213946:web:6cb9dda8a012c1f3d50403"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const SUBSCRIPTION_DAYS = 30;
+
+function getDeviceFingerprint() {
+  const components = [
+    screen.width, screen.height, screen.colorDepth || 0,
+    navigator.hardwareConcurrency || 0, navigator.deviceMemory || 0,
+    navigator.platform || '', navigator.language || '',
+    Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+    new Date().getTimezoneOffset() || 0
+  ];
+  const str = components.join('|');
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return 'fp_' + Math.abs(hash).toString(36) + '_' + components.slice(0, 3).join('x');
+}
+
+function unlockDevice(expiresAt) {
+  localStorage.setItem('device_unlocked', 'true');
+  localStorage.setItem('device_expires', expiresAt.toString());
+}
+
+function unlockApp() {
+  document.getElementById('lockScreen').classList.add('hidden');
+  document.getElementById('lockScreen').style.display = 'none';
+}
+
+function getDaysLeft() {
+  const expires = parseInt(localStorage.getItem('device_expires') || '0');
+  if (!expires) return 0;
+  const diff = expires - Date.now();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function updateDaysLeftDisplay() {
+  const days = getDaysLeft();
+  const display = document.getElementById('daysLeftDisplay');
+  if (display) {
+    display.textContent = days + ' дн.';
+    display.className = 'subscription-info-days';
+    if (days <= 3) display.classList.add('danger');
+    else if (days <= 7) display.classList.add('warning');
+  }
+}
+
+async function checkPassword() {
+  const input = document.getElementById('lockPasswordInput').value.trim().toLowerCase();
+  const errorEl = document.getElementById('lockError');
+  const btn = document.getElementById('lockBtn');
+  
+  if (!input) { errorEl.textContent = 'Введите код'; return; }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner"></span>Проверка...';
+  errorEl.textContent = '';
+  
+  try {
+    const codeRef = db.collection('codes').doc(input);
+    const codeSnap = await codeRef.get();
+    const fingerprint = getDeviceFingerprint();
+    
+    if (!codeSnap.exists) {
+      errorEl.textContent = 'Недействительный код';
+      document.getElementById('lockPasswordInput').classList.add('error');
+      setTimeout(() => document.getElementById('lockPasswordInput').classList.remove('error'), 400);
+      btn.disabled = false;
+      btn.textContent = 'Разблокировать';
+      return;
+    }
+    
+    const codeData = codeSnap.data();
+    
+    if (codeData.used) {
+      if (codeData.deviceId === fingerprint) {
+        const expiresAt = codeData.expiresAt ? codeData.expiresAt.toMillis() : Date.now() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000;
+        if (expiresAt > Date.now()) {
+          unlockDevice(expiresAt);
+          unlockApp();
+        } else {
+          errorEl.textContent = 'Срок действия кода истёк. Введите новый код.';
+          btn.disabled = false;
+          btn.textContent = 'Разблокировать';
+        }
+      } else {
+        errorEl.textContent = 'Этот код уже активирован на другом устройстве';
+        btn.disabled = false;
+        btn.textContent = 'Разблокировать';
+      }
+      return;
+    }
+    
+    const expiresAt = Date.now() + SUBSCRIPTION_DAYS * 24 * 60 * 60 * 1000;
+    
+    await codeRef.update({
+      used: true,
+      deviceId: fingerprint,
+      expiresAt: new Date(expiresAt),
+      activatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    await db.collection('devices').doc(fingerprint).set({
+      code: input,
+      expiresAt: new Date(expiresAt),
+      activatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    
+    unlockDevice(expiresAt);
+    unlockApp();
+    
+  } catch (error) {
+    console.error('Firebase error:', error);
+    errorEl.textContent = 'Ошибка: ' + error.message;
+    btn.disabled = false;
+    btn.textContent = 'Разблокировать';
+  }
+}
+
+window.addEventListener('load', async () => {
+  const lockInput = document.getElementById('lockPasswordInput');
+  lockInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPassword(); });
+  
+  if (localStorage.getItem('device_unlocked') === 'true') {
+    const expires = parseInt(localStorage.getItem('device_expires') || '0');
+    if (expires > Date.now()) {
+      unlockApp();
+      updateDaysLeftDisplay();
+      if (typeof renderCalendar === 'function') renderCalendar();
+      if (typeof renderSchedule === 'function') renderSchedule();
+      return;
+    } else {
+      localStorage.removeItem('device_unlocked');
+      localStorage.removeItem('device_expires');
+    }
+  }
+  
+  const fingerprint = getDeviceFingerprint();
+  const subtitle = document.getElementById('lockSubtitle');
+  const daysLeftEl = document.getElementById('lockDaysLeft');
+  
+  try {
+    const deviceRef = db.collection('devices').doc(fingerprint);
+    const deviceSnap = await deviceRef.get();
+    
+    if (deviceSnap.exists) {
+      const deviceData = deviceSnap.data();
+      const expiresAt = deviceData.expiresAt ? deviceData.expiresAt.toMillis() : 0;
+      
+      if (expiresAt > Date.now()) {
+        const daysLeft = Math.ceil((expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
+        subtitle.textContent = 'Доступ активен';
+        daysLeftEl.textContent = `Осталось ${daysLeft} дн.`;
+        unlockDevice(expiresAt);
+        setTimeout(() => {
+          unlockApp();
+          if (typeof renderCalendar === 'function') renderCalendar();
+          if (typeof renderSchedule === 'function') renderSchedule();
+        }, 1500);
+        return;
+      }
+    }
+    
+    subtitle.textContent = 'Введите код доступа';
+    daysLeftEl.textContent = 'Доступ на 30 дней';
+    document.getElementById('lockInputWrapper').style.display = 'block';
+    document.getElementById('lockBtn').style.display = 'block';
+    document.getElementById('lockHint').style.display = 'block';
+    setTimeout(() => lockInput.focus(), 100);
+    
+  } catch (error) {
+    console.error('Firebase error:', error);
+    subtitle.textContent = 'Введите код доступа';
+    daysLeftEl.textContent = 'Доступ на 30 дней';
+    document.getElementById('lockInputWrapper').style.display = 'block';
+    document.getElementById('lockBtn').style.display = 'block';
+    document.getElementById('lockHint').style.display = 'block';
+  }
+  
+  if (typeof renderCalendar === 'function') renderCalendar();
+  if (typeof renderSchedule === 'function') renderSchedule();
+});
+
+window.checkPassword = checkPassword;
+</script>
+
+<script>
+const houseIcon=`<svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9v9a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2v-9z"/></svg>`;
+const runIcon=`<svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>`;
+const chatIcon=`<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`;
+const shareIcon=`<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>`;
+
+const teachers={'Информатика':'Иванова Мария Сергеевна','Русский язык':'Петрова Анна Ивановна','Химия':'Александрова Ольга Петровна','Геометрия':'Сидоров Дмитрий Алексеевич','Литература':'Козлова Елена Владимировна','Физическая культура':'Смирнов Алексей Николаевич','Обществознание':'Новикова Татьяна Дмитриевна','Физика':'Волков Игорь Петрович','Биология':'Морозова Наталья Андреевна','Программирование':'Иванова Мария Сергеевна','Алгебра и начала математического анализа':'Сидоров Дмитрий Алексеевич','История':'Белова Ирина Константиновна','Английский язык':'Кузнецова Ольга Викторовна','География':'Павлов Сергей Михайлович','Вероятность и статистика':'Сидоров Дмитрий Алексеевич','Основы безопасности и защиты Родины':'Орлов Виктор Степанович','Россия - мои горизонты':'Белова Ирина Константиновна','Индивидуальный проект':'Козлова Елена Владимировна'};
+const topics={'Информатика':'Алгоритмизация и программирование. Циклические алгоритмы','Русский язык':'Сложноподчинённые предложения. Виды придаточных','Химия':'Представление о классификации органических веществ. Номенклатура органических веществ','Геометрия':'Векторы в пространстве. Действия с векторами','Литература':'А.Н. Островский «Гроза». Образ Катерины','Физическая культура':'Тестирование физических качеств','Обществознание':'Правовое регулирование общественных отношений','Физика':'Законы Ньютона. Применение в задачах','Биология':'Клеточное деление. Митоз и мейоз','Программирование':'Функции и процедуры в Python','Алгебра и начала математического анализа':'Производная функции. Правила дифференцирования','История':'Первая мировая война. Причины и ход военных действий','Английский язык':'Conditionals. Mixed conditionals','География':'Население мира. Демографическая политика','Вероятность и статистика':'Комбинаторика. Перестановки и сочетания','Основы безопасности и защиты Родины':'Основы военной службы','Россия - мои горизонты':'Россия — страна возможностей','Индивидуальный проект':'Подготовка к защите проекта'};
+const materials={'Информатика':'Циклические алгоритмы','Русский язык':'Сложноподчинённые предложения','Химия':'Номенклатура органических соединений','Геометрия':'Векторы в пространстве','Литература':'Анализ драмы «Гроза»','Физическая культура':'Техника выполнения упражнений','Обществознание':'Право и закон','Физика':'Законы Ньютона','Биология':'Митоз и мейоз','Программирование':'Функции в Python','Алгебра и начала математического анализа':'Производная функции','История':'Первая мировая война','Английский язык':'Conditionals','География':'Население мира','Вероятность и статистика':'Комбинаторика','Основы безопасности и защиты Родины':'Военная служба','Россия - мои горизонты':'Возможности в России','Индивидуальный проект':'Методы исследования'};
+
+const tasksData={'2026-09-14':[{subject:'Русский язык',text:'Учить определения средств выразительности, упражнения (см.фото)',done:false},{subject:'Биология',text:'Параграф 1 чит., повторить конспект в тетради',done:false},{subject:'Физика',text:'§ 1.1 - 1.14. Упр. 1, 2.',done:false}],'2026-09-15':[{subject:'Программирование',text:'Решить задачу (код записать в тетрадь): https://clck.ru/3Vp56K',done:false},{subject:'Физика',text:'§ 1.15 – 1.22.',done:false,pending:1},{subject:'Физика',text:'§ 1.15 -1.22.',done:false,pending:1}],'2026-09-16':[{subject:'Информатика',text:'Решить задачи (решение записать в тетрадь): https://clck.ru/3Vop4n\nФайл с задачами также прикреплен',done:false},{subject:'Информатика',text:'Решить задачи (подготовка): https://clck.ru/3VqUkx',done:false},{subject:'Литература',text:'Завершить перечень конфликтов в "Грозе"',done:false},{subject:'География',text:'параграф 2',done:false,pending:1},{subject:'Алгебра и начала математического анализа',text:'Выполнение задания в чате',done:false},{subject:'История',text:'Чит. пар. 1. Найти в тексте параграфа ПРИЧИНЫ и ПОВОД к началу ПМВ.Чит. пар. 1.',done:false}],'2026-09-17':[{subject:'Английский язык',text:'Контрольная работа',done:false},{subject:'История',text:'Чит. пар. 2',done:false},{subject:'Обществознание',text:'Чит. пар. 1.',done:false},{subject:'Литература',text:'Судьба Катерины',done:false}],'2026-09-18':[{subject:'Химия',text:'положения теории строения наизусть (записи в тетради); повторить электронное строение элементов 2-ого периода',done:false},{subject:'Геометрия',text:'Задачи № 5, 1а-5а',done:false,pending:2}],'2026-09-19':[],'2026-09-20':[],'2026-09-21':[{subject:'Алгебра и начала математического анализа',text:'Выполнить № 112(1,3,5), 113, 114 (1), 116 (2)',done:false,pending:2},{subject:'Биология',text:'Без дз',done:true}],'2026-09-22':[{subject:'Геометрия',text:'Выполнить письменно с оформлением задачи № 6а-8а',done:false,pending:1}]};
+
+const scheduleData={'2026-09-14':[{num:1,start:'09:10',end:'09:55',room:'402',subject:'Русский язык',homework:'Учить определения средств выразительности'},{breakTime:20,breakEnd:'10:10'},{num:2,start:'10:10',end:'10:55',room:'402',subject:'Геометрия',homework:null},{breakTime:20,breakEnd:'11:10'},{num:3,start:'11:10',end:'11:55',room:'408',subject:'Физика',homework:'§ 1.1 - 1.14. Упр. 1, 2.'},{breakTime:10,breakEnd:'12:05'},{num:4,start:'12:05',end:'12:50',room:'401',subject:'Основы безопасности и защиты Родины',homework:null,badge:3},{breakTime:20,breakEnd:'13:10'},{num:5,start:'13:10',end:'13:55',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:20,breakEnd:'14:15'},{num:6,start:'14:15',end:'15:00',room:'412',subject:'Биология',homework:'Параграф 1 чит'},{breakTime:20,breakEnd:'15:20'},{num:7,start:'15:20',end:'16:05',room:'402',subject:'Программирование',homework:null}],'2026-09-15':[{num:1,start:'09:30',end:'10:15',room:'402',subject:'Программирование',homework:null},{breakTime:10,breakEnd:'10:25'},{num:2,start:'10:25',end:'11:10',room:'206',subject:'Геометрия',homework:null},{breakTime:20,breakEnd:'11:30'},{num:3,start:'11:30',end:'12:15',room:'311',subject:'Физика',homework:'§ 1.15 – 1.22.',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:10,breakEnd:'12:25'},{num:4,start:'12:25',end:'13:10',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:10,breakEnd:'13:20'},{num:5,start:'13:20',end:'14:05',room:'317',subject:'Английский язык',homework:'ex 1,2,3,4,5',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'14:25'},{num:6,start:'14:25',end:'15:10',room:'311',subject:'Физика',homework:'§ 1.15 – 1.22.'},{breakTime:10,breakEnd:'15:20'},{num:7,start:'15:20',end:'16:05',room:'402',subject:'Информатика',homework:null,badge:3}],'2026-09-16':[{num:1,start:'08:30',end:'09:15',room:'206',subject:'Вероятность и статистика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'407',subject:'История',homework:'Чит. пар. 1'},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'402',subject:'Информатика',homework:'Решить задачи',badge:3},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:null,badge:2},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:35',end:'13:20',room:'408',subject:'Литература',homework:'Конфликты в "Грозе"'},{breakTime:10,breakEnd:'13:30'},{num:6,start:'13:30',end:'14:15',room:'406',subject:'География',homework:'параграф 2',badge:4},{breakTime:20,breakEnd:'14:35'},{num:7,start:'14:35',end:'15:20',room:'206',subject:'Алгебра и начала математического анализа',homework:'Задание в чате'}],'2026-09-17':[{num:1,start:'08:30',end:'09:15',room:'311',subject:'Россия - мои горизонты',subtitle:'Внеурочная деятельность',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:10',room:'317',subject:'Английский язык',homework:'Контрольная работа'},{breakTime:20,breakEnd:'10:30'},{num:3,start:'10:30',end:'11:10',room:'407',subject:'История',homework:'Чит. пар. 2'},{breakTime:20,breakEnd:'11:30'},{num:4,start:'11:30',end:'12:10',room:'407',subject:'Обществознание',homework:'Чит. пар. 1.'},{breakTime:10,breakEnd:'12:20'},{num:5,start:'12:20',end:'13:00',room:'408',subject:'Литература',homework:'Судьба Катерины'},{breakTime:20,breakEnd:'13:20'},{num:6,start:'13:20',end:'14:00',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:20,breakEnd:'14:20'},{num:7,start:'14:20',end:'15:00',room:'305',subject:'Индивидуальный проект',homework:null},{breakTime:10,breakEnd:'15:10'},{num:8,start:'15:10',end:'15:50',room:'402',subject:'Информатика',homework:null}],'2026-09-18':[{num:1,start:'08:30',end:'09:15',room:'402',subject:'Информатика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'408',subject:'Русский язык',homework:null},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'212',subject:'Химия',homework:'положения теории строения наизусть (записи в тетради); повторить электронное строение элементов 2-ого периода'},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:'Задачи № 5, 1а-5а',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:35',end:'13:20',room:'408',subject:'Литература',homework:null},{breakTime:10,breakEnd:'13:30'},{num:6,start:'13:30',end:'14:15',room:'231',subject:'Физическая культура',homework:null},{breakTime:20,breakEnd:'14:35'},{num:7,start:'14:35',end:'15:20',room:'407',subject:'Обществознание',homework:null}],'2026-09-19':[],'2026-09-20':[],'2026-09-21':[{num:1,start:'08:30',end:'09:15',room:'402',subject:'Информатика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'408',subject:'Русский язык',homework:null},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'212',subject:'Химия',homework:null},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:null},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:20',end:'13:00',room:'206',subject:'Алгебра и начала математического анализа',homework:'Выполнить № 112(1,3,5), 113, 114 (1), 116 (2)',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'13:20'},{num:6,start:'13:20',end:'14:00',room:'412',subject:'Биология',homework:'Без дз'},{breakTime:20,breakEnd:'14:20'},{num:7,start:'14:20',end:'15:00',room:'402',subject:'Программирование',homework:null},{type:'other',title:'Другие мероприятия',items:[{time:'14:35 – 16:10',text:'Редакция школьных СМИ (5-11 классы)',sub:'Дополнительное образование'}]}],'2026-09-22':[{num:1,start:'09:30',end:'10:15',room:'402',subject:'Программирование',homework:null},{breakTime:20,breakEnd:'10:35'},{num:2,start:'10:35',end:'11:20',room:'206',subject:'Геометрия',homework:'Выполнить письменно с оформлением задачи № 6а-8а',pending:'1 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'11:40'},{num:3,start:'11:40',end:'12:25',room:'311',subject:'Физика',homework:null},{breakTime:10,breakEnd:'12:35'},{num:4,start:'12:35',end:'13:20',room:'206',subject:'Алгебра и начала математического анализа',homework:null}]};
+
+const gradesData={'Физическая культура':[{grade:5,date:'18.09',desc:'Тестирование физических качеств'}],'Информатика':[{grade:3,date:'16.09',desc:'Решение задач',hasChat:true}],'Геометрия':[{grade:2,date:'16.09',desc:'Решение задач',hasChat:true}],'География':[{grade:4,date:'16.09',desc:'Решение задач'}],'Основы безопасности и защиты Родины':[{grade:3,date:'14.09',desc:'Домашнее задание'}],'Алгебра и начала математического анализа':[{grade:3,date:'10.09',desc:'Контрольная работа'},{grade:2,date:'05.09',desc:'Самостоятельная работа'}],'История':[{grade:5,date:'12.09',desc:'Ответ на уроке'}],'Литература':[{grade:4,date:'11.09',desc:'Сочинение'},{grade:3,date:'08.09',desc:'Ответ на уроке'}],'Обществознание':[{grade:3,date:'13.09',desc:'Тест'}],'Химия':[{grade:2,date:'09.09',desc:'Контрольная работа'}]};
+
+let currentWeekStart=new Date(2026,8,21);
+let selectedDate=new Date(2026,8,22);
+let currentGradeSubject=null,selectedGradeValue=null,currentGradeView='date';
+let currentLessonItem=null,currentLessonDate=null;
+
+const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const monthNamesGenitive=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const dayNames=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const dayNamesFull=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+
+function getDateKey(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
+function isSameDay(d1,d2){return d1.getFullYear()===d2.getFullYear()&&d1.getMonth()===d2.getMonth()&&d1.getDate()===d2.getDate();}
+
+let touchStartX=0,touchEndX=0;
+const calendarEl=document.getElementById('calendarWeek');
+calendarEl.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX;},{passive:true});
+calendarEl.addEventListener('touchend',e=>{touchEndX=e.changedTouches[0].screenX;handleSwipe();},{passive:true});
+let mouseDown=false;
+calendarEl.addEventListener('mousedown',e=>{mouseDown=true;touchStartX=e.screenX;});
+document.addEventListener('mouseup',e=>{if(mouseDown){mouseDown=false;touchEndX=e.screenX;handleSwipe();}});
+function handleSwipe(){const diff=touchStartX-touchEndX;if(Math.abs(diff)>50){if(diff>0)changeWeek(1);else changeWeek(-1);}}
+function changeWeek(delta){currentWeekStart.setDate(currentWeekStart.getDate()+delta*7);selectedDate=new Date(currentWeekStart);renderCalendar();renderCurrentPage();}
+function goToday(){const dayOfWeek=selectedDate.getDay();const mondayOffset=dayOfWeek===0?-6:1-dayOfWeek;currentWeekStart=new Date(selectedDate);currentWeekStart.setDate(selectedDate.getDate()+mondayOffset);renderCalendar();renderCurrentPage();}
+function selectDate(date){selectedDate=new Date(date);renderCalendar();renderSchedule();}
+
+function renderCalendar(){
+  const monthBtn=document.getElementById('monthBtn');
+  monthBtn.textContent=monthNames[currentWeekStart.getMonth()];
+  let html='';
+  for(let i=0;i<7;i++){
+    const date=new Date(currentWeekStart);date.setDate(currentWeekStart.getDate()+i);
+    let className='day-number';
+    const isWeekend=i>=5;const isSelected=isSameDay(date,selectedDate);
+    if(isSelected)className+=' selected';if(isWeekend&&!isSelected)className+=' weekend';
+    html+=`<div class="calendar-day" onclick='selectDate(new Date(${date.getFullYear()},${date.getMonth()},${date.getDate()}))'><div class="day-name">${dayNames[i]}</div><div class="${className}">${date.getDate()}</div></div>`;
+  }
+  document.getElementById('calendarWeek').innerHTML=html;
+}
+
+function getScheduleForDate(date){const key=getDateKey(date);return scheduleData[key]!==undefined?scheduleData[key]:[];}
+
+function openLessonDetail(item,date){
+  currentLessonItem=item;currentLessonDate=date;
+  const dayName=dayNamesFull[date.getDay()];
+  document.getElementById('ldDate').textContent=`${dayName.charAt(0).toUpperCase()+dayName.slice(1)} ${date.getDate()} сен ${item.start}–${item.end}`;
+  document.getElementById('ldSubject').textContent=item.subject;
+  document.getElementById('ldTopic').textContent=topics[item.subject]||'Тема урока';
+  document.getElementById('ldTeacher').textContent=teachers[item.subject]||'Учитель не указан';
+  document.getElementById('ldMaterial').textContent=materials[item.subject]||'Материалы урока';
+  document.getElementById('ldTaskText').textContent=item.homework||'Задание не задано';
+  const taskDate=new Date(date);taskDate.setDate(taskDate.getDate()-5);
+  document.getElementById('ldTaskDate').textContent=`Это задание было задано ${taskDate.getDate()} сен в 11:53 и с тех пор не изменялось`;
+  document.getElementById('taskBadge').textContent=item.homework?'1':'0';
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===0));
+  document.getElementById('lessonDetailPage').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeLessonDetail(){document.getElementById('lessonDetailPage').classList.remove('active');document.body.style.overflow='';}
+function switchLessonTab(tab,btn){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(tab==='lesson'?'tabLesson':'tabTasks').classList.add('active');
+}
+
+function editTeacher(){document.getElementById('teacherInput').value=document.getElementById('ldTeacher').textContent;document.getElementById('teacherModalOverlay').classList.add('show');}
+function closeTeacherModal(){document.getElementById('teacherModalOverlay').classList.remove('show');}
+function saveTeacher(){const newTeacher=document.getElementById('teacherInput').value.trim();if(newTeacher&&currentLessonItem){teachers[currentLessonItem.subject]=newTeacher;document.getElementById('ldTeacher').textContent=newTeacher;}closeTeacherModal();}
+
+function editTopic(){document.getElementById('topicInput').value=document.getElementById('ldTopic').textContent;document.getElementById('topicModalOverlay').classList.add('show');}
+function closeTopicModal(){document.getElementById('topicModalOverlay').classList.remove('show');}
+function saveTopic(){const newTopic=document.getElementById('topicInput').value.trim();if(newTopic&&currentLessonItem){topics[currentLessonItem.subject]=newTopic;document.getElementById('ldTopic').textContent=newTopic;}closeTopicModal();}
+
+function editTask(){document.getElementById('taskInput').value=document.getElementById('ldTaskText').textContent;document.getElementById('taskModalOverlay').classList.add('show');}
+function closeTaskModal(){document.getElementById('taskModalOverlay').classList.remove('show');}
+function saveTask(){const newTask=document.getElementById('taskInput').value.trim();if(newTask&&currentLessonItem){currentLessonItem.homework=newTask;document.getElementById('ldTaskText').textContent=newTask;document.getElementById('taskBadge').textContent='1';renderSchedule();}closeTaskModal();}
+
+function renderSchedule(){
+  const schedule=getScheduleForDate(selectedDate);
+  const container=document.getElementById('schedule');
+  if(!schedule||schedule.length===0){
+    container.innerHTML=`<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Уроков и мероприятий нет</div><div class="empty-subtitle">Уроков и мероприятий на этот день<br>не найдено</div><button class="empty-btn"><svg viewBox="0 0 24 24" fill="none" stroke="#4a6cf7" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Создать мероприятие</button></div>`;
+    return;
+  }
+  let html='';
+  schedule.forEach((item)=>{
+    if(item.type==='other'){
+      html+=`<div class="section-title">${item.title}</div>`;
+      item.items.forEach(ev=>{html+=`<div class="lesson-card"><div class="lesson-info"><span>${ev.time}</span></div><div class="lesson-subject gray">${ev.text}</div><div class="homework-text" style="margin-top:8px">${ev.sub}</div></div>`;});
+      return;
+    }
+    if(item.breakTime!==undefined){
+      html+=`<div class="break-row"><div class="break-left"><span class="break-icon">${runIcon}</span><span>Перемена ${item.breakTime} минут</span></div><span>${item.breakEnd||''}</span></div>`;
+    }else{
+      let badgeHtml=item.badge?`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`:'';
+      let subtitleHtml=item.subtitle?`<div style="font-size:14px;color:#6e6e73;margin-bottom:8px;font-weight:400">${item.subtitle}</div>`:'';
+      let homeworkHtml='';
+      if(item.homework){
+        homeworkHtml=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание</div><div class="homework-text">${item.homework.replace(/\n/g,'<br>')}</div>${item.pending?`<div class="homework-pending ${item.pendingColor||''}">${item.pending}</div>`:''}</div></div>`;
+      }else{
+        homeworkHtml=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание не задано</div></div></div>`;
+      }
+      html+=`<div class="lesson-card" onclick='openLessonDetail(${JSON.stringify(item)}, new Date(${selectedDate.getFullYear()},${selectedDate.getMonth()},${selectedDate.getDate()}))'>${badgeHtml}<div class="lesson-info"><span>${item.num} урок</span><span>${item.start} – ${item.end}</span><span>каб. ${item.room}</span></div><div class="lesson-subject">${item.subject}</div>${subtitleHtml}${homeworkHtml}</div>`;
+    }
+  });
+  container.innerHTML=html;
+}
+
+function renderTasks(){
+  const container=document.getElementById('tasksContent');
+  const weekEnd=new Date(currentWeekStart);weekEnd.setDate(currentWeekStart.getDate()+6);
+  const startStr=`${currentWeekStart.getDate()} сен – ${weekEnd.getDate()} сен`;
+  let html=`<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${startStr}</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  let hasAnyTasks=false;
+  for(let i=0;i<7;i++){
+    const date=new Date(currentWeekStart);date.setDate(currentWeekStart.getDate()+i);
+    const key=getDateKey(date);
+    const tasks=(tasksData[key]||[]).filter(t=>!t.start);
+    if(tasks.length===0)continue;
+    hasAnyTasks=true;
+    const isToday=isSameDay(date,new Date(2026,8,22));
+    const dayName=dayNamesFull[date.getDay()];
+    const monthName=monthNamesGenitive[date.getMonth()];
+    const dateStr=`${date.getDate()} ${monthName.toUpperCase()}`;
+    const grouped={};
+    tasks.forEach((t,idx)=>{if(!grouped[t.subject])grouped[t.subject]=[];grouped[t.subject].push({...t,idx});});
+    html+=`<div class="date-group" style="animation-delay:${i*0.05}s"><div class="date-group-header"><div class="date-group-header-left"><div class="date-group-header-title">${dateStr}</div><div class="date-group-sub">${dayName}</div></div><button class="share-btn" onclick="shareDayTasks('${key}')">${shareIcon}</button></div>`;
+    Object.keys(grouped).forEach(subject=>{
+      html+=`<div class="task-subject-name">${subject}</div>`;
+      grouped[subject].forEach(task=>{
+        const pendingText=task.pending?`<div class="task-item-pending">${task.pending} для выполнения</div>`:'';
+        html+=`<div class="task-item"><div class="task-item-checkbox ${task.done?'checked':''}" onclick="toggleTask('${key}', ${task.idx})"></div><div style="flex:1"><div class="task-item-text ${task.done?'done':''}">${task.text.replace(/\n/g,'<br>')}</div>${pendingText}</div></div>`;
+      });
+    });
+    html+=`</div>`;
+  }
+  if(!hasAnyTasks){html+=`<div class="empty-day"><div class="empty-emoji"></div><div class="empty-title">Заданий на эту неделю нет</div><div class="empty-subtitle">Все задания выполнены или ещё не заданы</div></div>`;}
+  container.innerHTML=html;
+}
+
+function toggleTask(dateKey,taskIdx){if(!tasksData[dateKey])return;tasksData[dateKey][taskIdx].done=!tasksData[dateKey][taskIdx].done;renderTasks();}
+function shareDayTasks(dateKey){
+  const tasks=(tasksData[dateKey]||[]).filter(t=>!t.start);
+  if(tasks.length===0)return;
+  const date=new Date(dateKey);
+  const text=`Задания на ${date.getDate()} ${monthNamesGenitive[date.getMonth()]}:\n\n`+tasks.map(t=>`• ${t.subject}: ${t.text}`).join('\n');
+  if(navigator.share){navigator.share({text});}else{navigator.clipboard.writeText(text).then(()=>alert('Скопировано!'));}
+}
+
+function renderGradesByDate(){
+  const container=document.getElementById('gradesContent');
+  const weekEnd=new Date(currentWeekStart);weekEnd.setDate(currentWeekStart.getDate()+6);
+  const startStr=`${currentWeekStart.getDate()} ${monthNamesGenitive[currentWeekStart.getMonth()]}`;
+  const endStr=`${weekEnd.getDate()} ${monthNamesGenitive[weekEnd.getMonth()]}`;
+  let html=`<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${startStr} – ${endStr}</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  const weekGrades=[];
+  for(let i=0;i<7;i++){
+    const date=new Date(currentWeekStart);date.setDate(currentWeekStart.getDate()+i);
+    const dayGrades=[];
+    Object.keys(gradesData).forEach(subject=>{
+      gradesData[subject].forEach((g,idx)=>{
+        if(g.date===`${String(date.getDate()).padStart(2,'0')}.${String(date.getMonth()+1).padStart(2,'0')}`)dayGrades.push({subject,grade:g.grade,desc:g.desc,hasChat:g.hasChat,gradeIdx:idx});
+      });
+    });
+    if(dayGrades.length>0)weekGrades.push({date,dayGrades});
+  }
+  weekGrades.sort((a,b)=>b.date-a.date);
+  if(weekGrades.length===0){html+=`<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Оценок за эту неделю нет</div></div>`;}
+  else{
+    weekGrades.forEach(wg=>{
+      const isToday=isSameDay(wg.date,new Date(2026,8,22));
+      const dayName=dayNamesFull[wg.date.getDay()];
+      const dateStr=`${wg.date.getDate()} ${monthNamesGenitive[wg.date.getMonth()].toUpperCase()}`;
+      html+=`<div class="date-group ${isToday?'today':''}"><div class="date-group-header"><div class="date-group-header-left"><div class="date-group-header-title">${dateStr}</div></div></div><div class="date-group-sub">${isToday?'сегодня':dayName}</div>`;
+      wg.dayGrades.forEach(g=>{html+=`<div class="grade-row" onclick="removeGradeConfirm('${g.subject}', ${g.gradeIdx})"><div class="grade-box"><span class="grade-val">${g.grade}</span><span class="grade-idx">1</span></div><div class="grade-row-info"><div class="grade-row-subject">${g.subject}</div><div class="grade-row-desc">${g.desc||'Домашнее задание'}</div></div><div class="grade-row-actions">${g.hasChat?`<span class="chat-icon-small">${chatIcon}</span>`:''}<span class="arrow-right">›</span></div></div>`;});
+      html+=`</div>`;
+    });
+  }
+  container.innerHTML=html;
+}
+
+function renderGradesBySubject(){
+  const container=document.getElementById('gradesContent');
+  const subjects=Object.keys(gradesData).sort();
+  let html='';
+  subjects.forEach(subject=>{
+    const grades=gradesData[subject];const avg=grades.reduce((s,g)=>s+g.grade,0)/grades.length;
+    const roundedAvg=Math.round(avg*100)/100;
+    let progressText='';let progressPercent=0;let trendDown=false;
+    if(avg>=4.5){progressText='цель достигнута';progressPercent=100;}
+    else if(avg>=3.5&&avg<4.5){if(grades.length>=2&&grades[0].grade<grades[1].grade)trendDown=true;const needed=calcGradesNeeded(grades,4);progressText=needed>0?`ещё ${needed} ${pluralize(needed,'оценка','оценки','оценок')} до 4`:'цель достигнута';progressPercent=((avg-3)/1)*100;}
+    else if(avg>=2.5&&avg<3.5){if(grades.length>=2&&grades[0].grade<grades[1].grade)trendDown=true;const needed=calcGradesNeeded(grades,3);progressText=needed>0?`ещё ${needed} ${pluralize(needed,'оценка','оценки','оценок')} до 3`:'цель достигнута';progressPercent=((avg-2)/1)*100;}
+    else{if(grades.length>=2&&grades[0].grade<grades[1].grade)trendDown=true;const needed=calcGradesNeeded(grades,3);progressText=needed>0?`ещё ${needed} ${pluralize(needed,'оценка','оценки','оценок')} до 3`:'цель достигнута';progressPercent=((avg-2)/1)*100;}
+    progressPercent=Math.min(100,Math.max(0,progressPercent));
+    html+=`<div class="subject-card"><div class="subject-card-top"><div class="subject-name">${subject}</div><div class="subject-avg-box">${trendDown?'<span class="trend-down">▼</span>':''}${roundedAvg.toFixed(2)}</div></div><div class="subject-semester">1 полугодие</div><div class="progress-bar"><div class="progress-fill" style="width:${progressPercent}%"></div></div><div class="progress-text ${progressText==='цель достигнута'?'achieved':''}">${progressText}</div></div>`;
+  });
+  const allSubjects=['Алгебра и начала математического анализа','Английский язык','Биология','Вероятность и статистика','География','Геометрия','История','Индивидуальный проект','Информатика','Литература','Математика','Обществознание','Основы безопасности и защиты Родины','Программирование','Русский язык','Физика','Физическая культура','Химия'];
+  allSubjects.forEach(s=>{if(!gradesData[s]){html+=`<div class="subject-card"><div class="subject-card-top"><div class="subject-name">${s}</div><div class="subject-avg-box">—</div></div></div>`;}});
+  container.innerHTML=html;
+}
+
+function calcGradesNeeded(grades,target){const sum=grades.reduce((s,g)=>s+g.grade,0);const n=grades.length;if(target>=5)return 0;return Math.max(0,Math.ceil((target*n-sum)/(5-target)));}
+function pluralize(n,one,few,many){const mod10=n%10;const mod100=n%100;if(mod100>=11&&mod100<=19)return many;if(mod10===1)return one;if(mod10>=2&&mod10<=4)return few;return many;}
+function removeGradeConfirm(subject,idx){if(confirm(`Удалить оценку по предмету "${subject}"?`)){gradesData[subject].splice(idx,1);if(gradesData[subject].length===0)delete gradesData[subject];if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();}}
+
+function openGradeModal(){
+  const allSubjects=['Алгебра и начала математического анализа','Английский язык','Биология','Вероятность и статистика','География','Геометрия','История','Индивидуальный проект','Информатика','Литература','Математика','Обществознание','Основы безопасности и защиты Родины','Программирование','Русский язык','Физика','Физическая культура','Химия'];
+  let html='<h3>Выберите предмет</h3><div style="max-height:300px;overflow-y:auto;margin-bottom:16px">';
+  allSubjects.forEach(s=>{html+=`<div class="subject-list-item" onclick="selectGradeSubject('${s.replace(/'/g,"\\'")}')">${s}</div>`;});
+  html+='</div><div class="grade-modal-actions"><button class="grade-cancel" onclick="closeGradeModal()">Отмена</button></div>';
+  document.getElementById('gradeModalContent').innerHTML=html;
+  document.getElementById('gradeModalOverlay').classList.add('show');
+}
+function selectGradeSubject(subject){
+  currentGradeSubject=subject;selectedGradeValue=null;
+  const today=new Date(2026,8,22);
+  const dateStr=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  document.getElementById('gradeModalContent').innerHTML=`<h3>Поставить оценку</h3><div style="font-size:14px;color:#8e8e93;margin-bottom:14px">${subject}</div><div class="grade-select"><button class="grade-option" data-grade="5" onclick="selectGrade(5)">5</button><button class="grade-option" data-grade="4" onclick="selectGrade(4)">4</button><button class="grade-option" data-grade="3" onclick="selectGrade(3)">3</button><button class="grade-option" data-grade="2" onclick="selectGrade(2)">2</button></div><input type="date" class="grade-date-input" id="gradeDate" value="${dateStr}"><input type="text" class="grade-desc-input" id="gradeDesc" placeholder="Описание"><div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8e8e93;cursor:pointer"><input type="checkbox" id="gradeHasChat" style="width:18px;height:18px"> Есть комментарии</label></div><div class="grade-modal-actions"><button class="grade-cancel" onclick="closeGradeModal()">Отмена</button><button class="grade-confirm" onclick="confirmGrade()">Поставить</button></div>`;
+}
+function selectGrade(val){selectedGradeValue=val;document.querySelectorAll('.grade-option').forEach(btn=>btn.className='grade-option');document.querySelector(`.grade-option[data-grade="${val}"]`).classList.add(`sel-${val}`);}
+function confirmGrade(){
+  if(!selectedGradeValue||!currentGradeSubject)return;
+  const dateInput=document.getElementById('gradeDate').value;const dateObj=new Date(dateInput);
+  const dateStr=`${String(dateObj.getDate()).padStart(2,'0')}.${String(dateObj.getMonth()+1).padStart(2,'0')}`;
+  const desc=document.getElementById('gradeDesc').value||'';const hasChat=document.getElementById('gradeHasChat').checked;
+  if(!gradesData[currentGradeSubject])gradesData[currentGradeSubject]=[];
+  gradesData[currentGradeSubject].unshift({grade:selectedGradeValue,date:dateStr,desc,hasChat});
+  if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();
+  closeGradeModal();
+}
+function closeGradeModal(){document.getElementById('gradeModalOverlay').classList.remove('show');}
+
+function renderCurrentPage(){
+  const activePage=document.querySelector('.page.active');
+  if(!activePage)return;
+  if(activePage.id==='pageSchedule')renderSchedule();
+  else if(activePage.id==='pageGrades'){if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();}
+  else if(activePage.id==='pageTasks')renderTasks();
+}
+
+function switchPage(page,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const oldPlaceholder=document.getElementById('pagePlaceholder');
+  if(oldPlaceholder)oldPlaceholder.remove();
+  const calendarBlock=document.getElementById('calendarBlock');
+  const filtersBlock=document.getElementById('filtersBlock');
+  if(page==='schedule'){
+    calendarBlock.style.display='block';filtersBlock.style.display='flex';
+    document.getElementById('pageSchedule').classList.add('active');
+    document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';
+    renderSchedule();
+  }else if(page==='grades'){
+    calendarBlock.style.display='none';filtersBlock.style.display='none';
+    document.getElementById('pageGrades').classList.add('active');
+    document.getElementById('addGradeFab').style.display='flex';document.getElementById('segmentedControl').style.display='flex';
+    if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();
+  }else if(page==='tasks'){
+    calendarBlock.style.display='none';filtersBlock.style.display='none';
+    document.getElementById('pageTasks').classList.add('active');
+    document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';
+    renderTasks();
+  }else if(page==='school'||page==='portfolio'){
+    calendarBlock.style.display='none';filtersBlock.style.display='none';
+    const placeholder=document.createElement('div');
+    placeholder.className='page active';placeholder.id='pagePlaceholder';
+    placeholder.innerHTML=`<div class="empty-day"><div class="empty-emoji"></div><div class="empty-title">Раздел в разработке</div><div class="empty-subtitle">Этот раздел скоро появится</div></div>`;
+    document.body.appendChild(placeholder);
+    document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';
+  }
+  btn.classList.add('active');
+}
+
+function switchGradeView(view,btn){currentGradeView=view;document.querySelectorAll('.segment-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(view==='date')renderGradesByDate();else renderGradesBySubject();}
+
+function openEditModal(){document.getElementById('modalOverlay').classList.add('show');renderLessonsEditor();updateDaysLeftDisplay();}
+function closeEditModal(){document.getElementById('modalOverlay').classList.remove('show');}
+
+function renderLessonsEditor(){
+  const container=document.getElementById('lessonsEditor');
+  const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+  let html='';
+  schedule.forEach((lesson,index)=>{
+    html+=`<div class="lesson-edit-item"><div class="edit-label">Урок ${index+1}</div>
+      <div class="lesson-edit-row"><input type="text" class="edit-subject" value="${lesson.subject}" placeholder="Предмет"></div>
+      <div class="lesson-edit-row"><input type="time" class="edit-start" value="${lesson.start}"><input type="time" class="edit-end" value="${lesson.end}"></div>
+      <div class="lesson-edit-row"><input type="text" class="edit-room" value="${lesson.room}" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
+      <div class="lesson-edit-row"><input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание"></div>
+      <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})">🗑</button></div></div>`;
+  });
+  container.innerHTML=html;container.dataset.lessonCount=schedule.length;
+}
+
+function addNewLesson(){
+  const container=document.getElementById('lessonsEditor');
+  const count=parseInt(container.dataset.lessonCount)||0;
+  const duration=parseInt(document.getElementById('lessonDuration').value)||45;
+  const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+  let newStart='08:30';
+  if(schedule.length>0){const last=schedule[schedule.length-1];const[h,m]=last.end.split(':').map(Number);const total=h*60+m+duration;newStart=`${String(Math.floor(total/60)).padStart(2,'0')}:${String(total%60).padStart(2,'0')}`;}
+  const[sh,sm]=newStart.split(':').map(Number);const et=sh*60+sm+duration;
+  const newEnd=`${String(Math.floor(et/60)).padStart(2,'0')}:${String(et%60).padStart(2,'0')}`;
+  container.insertAdjacentHTML('beforeend',`<div class="lesson-edit-item"><div class="edit-label">Урок ${count+1}</div>
+    <div class="lesson-edit-row"><input type="text" class="edit-subject" value="Новый предмет" placeholder="Предмет"></div>
+    <div class="lesson-edit-row"><input type="time" class="edit-start" value="${newStart}"><input type="time" class="edit-end" value="${newEnd}"></div>
+    <div class="lesson-edit-row"><input type="text" class="edit-room" value="101" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
+    <div class="lesson-edit-row"><input type="text" class="edit-homework" value="" placeholder="Домашнее задание"></div>
+    <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${count})">🗑</button></div></div>`);
+  container.dataset.lessonCount=count+1;
+}
+
+function deleteLesson(index){
+  const container=document.getElementById('lessonsEditor');
+  const items=container.querySelectorAll('.lesson-edit-item');
+  if(items.length<=1){alert('Должен быть хотя бы один урок!');return;}
+  items[index].remove();
+  const newItems=container.querySelectorAll('.lesson-edit-item');
+  newItems.forEach((item,i)=>{item.querySelector('.edit-label').textContent=`Урок ${i+1}`;item.querySelector('.delete-btn').setAttribute('onclick',`deleteLesson(${i})`);});
+  container.dataset.lessonCount=newItems.length;
+}
+
+function saveSchedule(){
+  const container=document.getElementById('lessonsEditor');const items=container.querySelectorAll('.lesson-edit-item');const newSchedule=[];
+  items.forEach((item,index)=>{
+    const subject=item.querySelector('.edit-subject').value||`Урок ${index+1}`;
+    const start=item.querySelector('.edit-start').value;const end=item.querySelector('.edit-end').value;
+    const room=item.querySelector('.edit-room').value||'101';
+    const homework=item.querySelector('.edit-homework').value||null;
+    newSchedule.push({num:index+1,start,end,room,subject,homework});
+    if(index<items.length-1){const[eh,em]=end.split(':').map(Number);const bt=eh*60+em+10;const be=`${String(Math.floor(bt/60)).padStart(2,'0')}:${String(bt%60).padStart(2,'0')}`;newSchedule.push({breakTime:10,breakEnd:be});}
+  });
+  scheduleData[getDateKey(selectedDate)]=newSchedule;renderSchedule();closeEditModal();
+}
+
+function resetToDefault(){delete scheduleData[getDateKey(selectedDate)];renderSchedule();closeEditModal();}
+function openNameModal(){document.getElementById('nameInput').value=document.getElementById('userName').textContent.trim();document.getElementById('nameModalOverlay').classList.add('show');}
+function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
+function saveName(){const newName=document.getElementById('nameInput').value.trim();if(newName){document.getElementById('userName').textContent=newName;closeNameModal();}}
+</script>
+</body>
+</html>
