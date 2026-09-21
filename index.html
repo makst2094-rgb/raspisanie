@@ -70,7 +70,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .dots-btn{font-size:19px;letter-spacing:1px;color:#000;font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit}
 .page{display:none}
 .page.active{display:block;animation:fadeIn 0.3s ease}
-.schedule,.grades-page,.tasks-page,.school-page,.portfolio-page,.reseller-page{padding:0 16px 100px}
+.schedule,.grades-page,.tasks-page,.school-page,.portfolio-page,.reseller-page,.admin-page{padding:0 16px 100px}
 .lesson-card{background:white;border-radius:16px;padding:14px 18px 16px 20px;margin-bottom:2px;position:relative;opacity:0;animation:cardAppear 0.35s ease forwards;cursor:pointer;transition:transform 0.15s}
 .lesson-card:active{transform:scale(0.98)}
 .lesson-card:nth-child(1){animation-delay:0.05s}.lesson-card:nth-child(2){animation-delay:0.1s}.lesson-card:nth-child(3){animation-delay:0.15s}.lesson-card:nth-child(4){animation-delay:0.2s}.lesson-card:nth-child(5){animation-delay:0.25s}.lesson-card:nth-child(6){animation-delay:0.3s}.lesson-card:nth-child(7){animation-delay:0.35s}.lesson-card:nth-child(8){animation-delay:0.4s}.lesson-card:nth-child(9){animation-delay:0.45s}.lesson-card:nth-child(10){animation-delay:0.5s}
@@ -430,6 +430,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .reseller-key-status.used{background:#f2f2f7;color:#8e8e93}
 .reseller-copy-btn{width:100%;padding:10px;background:#4a6cf7;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
 .reseller-copy-btn:active{transform:scale(0.97)}
+.admin-hero{background:linear-gradient(135deg,#1a1a3e 0%,#3d3d7a 100%);border-radius:20px;padding:24px;color:white;margin-bottom:20px;position:relative;overflow:hidden}
+.admin-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:rgba(255,255,255,0.1);border-radius:50%}
+.admin-hero-title{font-size:24px;font-weight:700;margin-bottom:8px;position:relative;z-index:1}
+.admin-hero-subtitle{font-size:14px;opacity:0.9;position:relative;z-index:1}
+.admin-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.admin-stat-card{background:white;border-radius:16px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.admin-stat-value{font-size:28px;font-weight:700;color:#4a6cf7;margin-bottom:4px}
+.admin-stat-label{font-size:12px;color:#8e8e93}
+.admin-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.admin-tab{padding:10px 16px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;background:white;color:#000;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.admin-tab.active{background:#4a6cf7;color:white}
+.admin-section{background:white;border-radius:16px;padding:20px;margin-bottom:16px}
+.admin-section-title{font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.admin-key-item{background:#f9f9fb;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.admin-key-code{font-family:monospace;font-size:14px;font-weight:600;color:#000}
+.admin-key-status{font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px}
+.admin-key-status.free{background:#dcfce7;color:#16a34a}
+.admin-key-status.used{background:#f2f2f7;color:#8e8e93}
+.admin-btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.admin-btn:active{transform:scale(0.95)}
+.admin-btn-primary{background:#4a6cf7;color:white}
+.admin-btn-danger{background:#ff3b30;color:white}
+.admin-btn-success{background:#22c55e;color:white}
+.admin-input{width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;font-family:inherit;margin-bottom:12px}
+.admin-input:focus{outline:none;border-color:#4a6cf7}
 </style>
 </head>
 <body>
@@ -486,7 +511,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <div class="page" id="pageReseller"><div class="reseller-page" id="resellerContent"></div></div>
 <div class="page" id="pageResellerLogin"><div style="padding:20px">
   <button class="reseller-back-btn" onclick="closeResellerLogin()">← Назад</button>
-  <h2 style="margin-bottom:20px">🔑 Вход для реселлеров</h2>
+  <h2 style="margin-bottom:20px"> Вход для реселлеров</h2>
   <div style="background:white;border-radius:16px;padding:20px">
     <div class="edit-field"><label>Твоё имя (выдал владелец)</label>
       <input type="text" id="resellerLoginName" placeholder="Например: Иван" style="width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;margin-bottom:12px">
@@ -531,6 +556,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
     </ol>
   </div>
 </div></div>
+
+<div class="page" id="pageAdminLogin"><div style="padding:20px">
+  <button class="reseller-back-btn" onclick="closeAdminLogin()">← Назад</button>
+  <h2 style="margin-bottom:20px">🔐 Вход в админ-панель</h2>
+  <div style="background:white;border-radius:16px;padding:20px">
+    <div class="edit-field"><label>Пароль администратора</label>
+      <input type="password" id="adminPasswordInput" placeholder="Введите пароль" style="width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;margin-bottom:12px">
+    </div>
+    <button onclick="adminLogin()" style="width:100%;padding:14px;background:#1a1a3e;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">Войти</button>
+    <div id="adminLoginError" style="color:#ff3b30;font-size:13px;margin-top:12px;text-align:center;display:none"></div>
+  </div>
+</div></div>
+
+<div class="page" id="pageAdmin"><div class="admin-page" id="adminContent"></div></div>
 
 <div class="lesson-detail-page" id="lessonDetailPage">
   <div class="lesson-detail-header">
@@ -599,7 +638,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeEditModal()">
   <div class="modal">
     <div class="modal-header"><h2>Настройки</h2><button class="modal-close" onclick="closeEditModal()">✕</button></div>
-    <div class="edit-section"><h3> Подписка</h3><div class="subscription-info"><div class="subscription-info-text">Осталось дней:</div><div class="subscription-info-days" id="daysLeftDisplay">—</div></div></div>
+    <div class="edit-section"><h3>📅 Подписка</h3><div class="subscription-info"><div class="subscription-info-text">Осталось дней:</div><div class="subscription-info-days" id="daysLeftDisplay">—</div></div></div>
     <div class="edit-section"><h3>Параметры расписания</h3>
       <div class="edit-field"><label>Начало первого урока</label><input type="time" id="firstLessonStart" value="08:30"></div>
       <div class="edit-field"><label>Длительность урока (минут)</label><input type="number" id="lessonDuration" value="45" min="20" max="90"></div>
@@ -1083,6 +1122,7 @@ function renderCurrentPage(){
   else if(ap.id==='pageSchool')renderSchool();
   else if(ap.id==='pagePortfolio')renderPortfolio();
   else if(ap.id==='pageReseller')renderReseller();
+  else if(ap.id==='pageAdmin')renderAdmin();
 }
 
 function switchPage(page,btn){
@@ -1315,7 +1355,7 @@ function renderReseller(){
     <div class="reseller-page">
       <button class="reseller-back-btn" onclick="closeResellerPage()">← Назад к дневнику</button>
       <div class="reseller-hero">
-        <div class="reseller-hero-title">💰 Программа партнёров</div>
+        <div class="reseller-hero-title"> Программа партнёров</div>
         <div class="reseller-hero-subtitle">Зарабатывай на продаже доступа к дневнику</div>
       </div>
       <div class="reseller-stats">
@@ -1338,7 +1378,7 @@ function renderReseller(){
             <div class="reseller-package-profit">💵 Твоя прибыль до 1 050₽</div>
           </div>
           <div class="reseller-package" onclick="selectPackage(this,'opt',30,2970,3000)">
-            <div class="reseller-package-header"><div class="reseller-package-name">🏆 Опт</div><div class="reseller-package-price">2 970₽</div></div>
+            <div class="reseller-package-header"><div class="reseller-package-name"> Опт</div><div class="reseller-package-price">2 970₽</div></div>
             <div class="reseller-package-desc">30 ключей по 99₽ каждый</div>
             <div class="reseller-package-profit">💵 Твоя прибыль до 3 000₽</div>
           </div>
@@ -1413,7 +1453,7 @@ async function submitResellerApplication(){
 async function sendTelegramNotification(app){
   if(!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN==='ВСТАВЬ_СЮДА_ТОКЕН_БОТА') return;
   if(!TELEGRAM_CHAT_ID || TELEGRAM_CHAT_ID==='ВСТАВЬ_СЮДА_CHAT_ID') return;
-  const message=` <b>Новая заявка от реселлера!</b>\n\n👤 <b>Имя:</b> ${app.name}\n📱 <b>Контакт:</b> ${app.contact}\n🏫 <b>Школа:</b> ${app.school||'Не указана'}\n📦 <b>Пакет:</b> ${app.package.name}\n   • Ключей: ${app.package.keys}\n   • Цена: ${app.package.price}₽\n <b>Потенциальная прибыль:</b> ${app.package.profit}₽\n💬 <b>Причина:</b> ${app.why||'Не указана'}\n\n📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
+  const message=` <b>Новая заявка от реселлера!</b>\n\n👤 <b>Имя:</b> ${app.name}\n <b>Контакт:</b> ${app.contact}\n🏫 <b>Школа:</b> ${app.school||'Не указана'}\n📦 <b>Пакет:</b> ${app.package.name}\n   • Ключей: ${app.package.keys}\n   • Цена: ${app.package.price}₽\n💰 <b>Потенциальная прибыль:</b> ${app.package.profit}₽\n💬 <b>Причина:</b> ${app.why||'Не указана'}\n\n📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
   try{await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TELEGRAM_CHAT_ID,text:message,parse_mode:'HTML'})});}catch(e){console.error('Telegram error:',e);}
 }
 
@@ -1544,7 +1584,7 @@ async function loadResellerKeys(){
       const isUsed=key.used===true;
       if(isUsed)used++;else free++;
       const statusClass=isUsed?'used':'free';
-      const statusText=isUsed?'✅ Продан':' Свободен';
+      const statusText=isUsed?'✅ Продан':'🟢 Свободен';
       const deviceId=key.deviceId||'—';
       const expiresAt=key.expiresAt?new Date(key.expiresAt.toMillis()).toLocaleDateString('ru-RU'):'—';
       html+=`<div class="reseller-key-card">
@@ -1571,7 +1611,6 @@ function copyKey(key){
   navigator.clipboard.writeText(key).then(()=>{alert('✅ Ключ скопирован: '+key);}).catch(()=>{const textarea=document.createElement('textarea');textarea.value=key;document.body.appendChild(textarea);textarea.select();document.execCommand('copy');document.body.removeChild(textarea);alert('✅ Ключ скопирован: '+key);});
 }
 
-// Добавляем кнопку входа для реселлеров на страницу партнёров
 const originalRenderReseller=renderReseller;
 renderReseller=function(){
   originalRenderReseller();
@@ -1582,12 +1621,367 @@ renderReseller=function(){
       btn.id='resellerLoginBtn';
       btn.className='reseller-submit';
       btn.style.cssText='margin-top:12px;background:#f2f2f7;color:#000';
-      btn.textContent='🔑 Я уже реселлер — войти';
+      btn.textContent=' Я уже реселлер — войти';
       btn.onclick=openResellerLogin;
       form.appendChild(btn);
     }
   },100);
 };
+
+// ===== АДМИН-ПАНЕЛЬ =====
+let adminClickCount=0;
+let adminClickTimer=null;
+let currentAdminTab='applications';
+
+// Доступ к админке: 5 кликов по аватарке (отдельно от реселлеров)
+document.querySelector('.avatar-wrapper').addEventListener('dblclick',function(e){
+  // Двойной клик = 2 обычных клика, нужно 5 обычных
+});
+
+// Альтернативный доступ: долгое нажатие на аватарку (2 секунды)
+let avatarPressTimer=null;
+document.querySelector('.avatar-wrapper').addEventListener('mousedown',function(){
+  avatarPressTimer=setTimeout(()=>{
+    openAdminLogin();
+  },2000);
+});
+document.querySelector('.avatar-wrapper').addEventListener('mouseup',function(){
+  clearTimeout(avatarPressTimer);
+});
+document.querySelector('.avatar-wrapper').addEventListener('touchstart',function(){
+  avatarPressTimer=setTimeout(()=>{
+    openAdminLogin();
+  },2000);
+});
+document.querySelector('.avatar-wrapper').addEventListener('touchend',function(){
+  clearTimeout(avatarPressTimer);
+});
+
+function openAdminLogin(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageAdminLogin').style.display='block';
+  document.getElementById('pageAdminLogin').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  document.getElementById('adminLoginError').style.display='none';
+  document.getElementById('adminPasswordInput').value='';
+}
+
+function closeAdminLogin(){
+  document.getElementById('pageAdminLogin').style.display='none';
+  document.getElementById('pageAdminLogin').classList.remove('active');
+  document.querySelector('.bottom-nav').style.display='flex';
+  document.getElementById('calendarBlock').style.display='block';
+  document.getElementById('filtersBlock').style.display='flex';
+  document.getElementById('pageSchedule').style.display='block';
+  document.getElementById('pageSchedule').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderSchedule();
+}
+
+async function adminLogin(){
+  const password=document.getElementById('adminPasswordInput').value;
+  const errorEl=document.getElementById('adminLoginError');
+  
+  if(!password){
+    errorEl.textContent='Введите пароль';
+    errorEl.style.display='block';
+    return;
+  }
+  
+  try{
+    // Получаем хэш пароля из Firebase
+    const configDoc=await db.collection('admin_settings').doc('config').get();
+    
+    if(!configDoc.exists){
+      // Первый вход — создаём пароль
+      const passwordHash=await hashPassword(password);
+      await db.collection('admin_settings').doc('config').set({
+        passwordHash:passwordHash,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      alert('✅ Пароль установлен! Теперь войдите снова.');
+      document.getElementById('adminPasswordInput').value='';
+      return;
+    }
+    
+    const storedHash=configDoc.data().passwordHash;
+    const inputHash=await hashPassword(password);
+    
+    if(storedHash===inputHash){
+      // Пароль верный
+      localStorage.setItem('admin_authenticated','true');
+      localStorage.setItem('admin_auth_time',Date.now().toString());
+      openAdminPanel();
+    }else{
+      errorEl.textContent='Неверный пароль';
+      errorEl.style.display='block';
+    }
+  }catch(error){
+    errorEl.textContent='Ошибка: '+error.message;
+    errorEl.style.display='block';
+  }
+}
+
+async function hashPassword(password){
+  const encoder=new TextEncoder();
+  const data=encoder.encode(password+'dnevnik_salt_2026');
+  const hashBuffer=await crypto.subtle.digest('SHA-256',data);
+  const hashArray=Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function openAdminPanel(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageAdmin').style.display='block';
+  document.getElementById('pageAdmin').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  window.scrollTo(0,0);
+  renderAdmin();
+}
+
+function closeAdminPanel(){
+  document.getElementById('pageAdmin').style.display='none';
+  document.getElementById('pageAdmin').classList.remove('active');
+  document.querySelector('.bottom-nav').style.display='flex';
+  document.getElementById('calendarBlock').style.display='block';
+  document.getElementById('filtersBlock').style.display='flex';
+  document.getElementById('pageSchedule').style.display='block';
+  document.getElementById('pageSchedule').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderSchedule();
+}
+
+function renderAdmin(){
+  const c=document.getElementById('adminContent');
+  c.innerHTML=`
+    <div class="admin-page">
+      <button class="reseller-back-btn" onclick="closeAdminPanel()">← Выйти из админки</button>
+      
+      <div class="admin-hero">
+        <div class="admin-hero-title">🔐 Админ-панель</div>
+        <div class="admin-hero-subtitle">Управление реселлерами и ключами</div>
+      </div>
+
+      <div class="admin-stats">
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="adminTotalKeys">0</div>
+          <div class="admin-stat-label">Всего ключей</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="adminFreeKeys">0</div>
+          <div class="admin-stat-label">Свободно</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="adminUsedKeys">0</div>
+          <div class="admin-stat-label">Продано</div>
+        </div>
+        <div class="admin-stat-card">
+          <div class="admin-stat-value" id="adminResellers">0</div>
+          <div class="admin-stat-label">Реселлеров</div>
+        </div>
+      </div>
+
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('applications',this)">📋 Заявки</button>
+        <button class="admin-tab" onclick="switchAdminTab('keys',this)">🔑 Ключи</button>
+        <button class="admin-tab" onclick="switchAdminTab('resellers',this)">👥 Реселлеры</button>
+        <button class="admin-tab" onclick="switchAdminTab('settings',this)">⚙️ Настройки</button>
+      </div>
+
+      <div id="adminTabContent"></div>
+    </div>
+  `;
+  
+  switchAdminTab('applications');
+  loadAdminStats();
+}
+
+async function loadAdminStats(){
+  try{
+    const codesSnapshot=await db.collection('codes').get();
+    const resellersSnapshot=await db.collection('resellers').where('status','==','approved').get();
+    
+    let total=0,used=0,free=0;
+    codesSnapshot.forEach(doc=>{
+      total++;
+      if(doc.data().used)used++;else free++;
+    });
+    
+    document.getElementById('adminTotalKeys').textContent=total;
+    document.getElementById('adminFreeKeys').textContent=free;
+    document.getElementById('adminUsedKeys').textContent=used;
+    document.getElementById('adminResellers').textContent=resellersSnapshot.size;
+  }catch(error){
+    console.error('Stats error:',error);
+  }
+}
+
+function switchAdminTab(tab,btn){
+  currentAdminTab=tab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelector(`.admin-tab:nth-child(${tab==='applications'?1:tab==='keys'?2:tab==='resellers'?3:4})`).classList.add('active');
+  
+  const content=document.getElementById('adminTabContent');
+  
+  if(tab==='applications'){
+    content.innerHTML='<div class="admin-section"><div class="admin-section-title">📋 Заявки от реселлеров</div><div id="adminApplicationsList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div></div>';
+    loadAdminApplications();
+  }else if(tab==='keys'){
+    content.innerHTML=`
+      <div class="admin-section">
+        <div class="admin-section-title">🔑 Все ключи</div>
+        <div style="margin-bottom:16px">
+          <button class="admin-btn admin-btn-primary" onclick="generateKeysPrompt()">+ Создать ключи</button>
+        </div>
+        <div id="adminKeysList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div>
+      </div>
+    `;
+    loadAdminKeys();
+  }else if(tab==='resellers'){
+    content.innerHTML='<div class="admin-section"><div class="admin-section-title">👥 Активные реселлеры</div><div id="adminResellersList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div></div>';
+    loadAdminResellers();
+  }else if(tab==='settings'){
+    content.innerHTML=`
+      <div class="admin-section">
+        <div class="admin-section-title">⚙️ Настройки</div>
+        <div class="edit-field">
+          <label>Изменить пароль администратора</label>
+          <input type="password" id="newAdminPassword" class="admin-input" placeholder="Новый пароль">
+          <button class="admin-btn admin-btn-primary" onclick="changeAdminPassword()" style="width:100%">Изменить пароль</button>
+        </div>
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e5ea">
+          <button class="admin-btn admin-btn-danger" onclick="logoutAdmin()" style="width:100%"> Выйти из админки</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function loadAdminApplications(){
+  const list=document.getElementById('adminApplicationsList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('reseller_applications').orderBy('createdAt','desc').limit(50).get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Заявок пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const app=doc.data();
+      const date=app.createdAt?new Date(app.createdAt.toMillis()).toLocaleDateString('ru-RU'):'—';
+      html+=`<div class="reseller-app-item">
+        <div class="reseller-app-name">${app.name}</div>
+        <div class="reseller-app-contact">${app.contact}</div>
+        <div class="reseller-app-school">${app.school||'Школа не указана'}</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px">📦 Пакет: ${app.package.name} (${app.package.keys} ключей, ${app.package.price}₽)</div>
+        ${app.why?`<div style="font-size:12px;color:#8e8e93;margin-top:4px">"${app.why}"</div>`:''}
+        <div style="font-size:11px;color:#8e8e93;margin-top:4px">📅 ${date}</div>
+        <div class="reseller-app-status ${app.status}">${app.status==='pending'?'⏳ Ожидает':app.status==='approved'?'✅ Одобрено':'❌ Отклонено'}</div>
+        ${app.status==='pending'?`<div style="display:flex;gap:6px;margin-top:8px">
+          <button onclick="approveReseller('${doc.id}','${app.name}','${app.contact}','${app.school}',${app.package.keys})" class="admin-btn admin-btn-success" style="flex:1">Одобрить</button>
+          <button onclick="rejectReseller('${doc.id}')" class="admin-btn admin-btn-danger" style="flex:1">Отклонить</button>
+        </div>`:''}
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function loadAdminKeys(){
+  const list=document.getElementById('adminKeysList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('codes').orderBy('createdAt','desc').limit(100).get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Ключей пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const key=doc.data();
+      const isUsed=key.used===true;
+      const statusClass=isUsed?'used':'free';
+      const statusText=isUsed?'✅ Продан':'🟢 Свободен';
+      const assignedTo=key.assignedTo||'—';
+      const deviceId=key.deviceId||'—';
+      html+=`<div class="admin-key-item">
+        <div>
+          <div class="admin-key-code">${doc.id}</div>
+          <div style="font-size:11px;color:#8e8e93;margin-top:4px">Реселлер: ${assignedTo}</div>
+          ${isUsed?`<div style="font-size:11px;color:#8e8e93">Активирован: ${deviceId}</div>`:''}
+        </div>
+        <div class="admin-key-status ${statusClass}">${statusText}</div>
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function loadAdminResellers(){
+  const list=document.getElementById('adminResellersList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('resellers').where('status','==','approved').get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Реселлеров пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const reseller=doc.data();
+      html+=`<div class="reseller-app-item">
+        <div class="reseller-app-name">${reseller.name}</div>
+        <div class="reseller-app-contact">${reseller.contact}</div>
+        <div class="reseller-app-school">${reseller.school||'Школа не указана'}</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px">📦 Пакет: ${reseller.package.keys} ключей</div>
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function generateKeysPrompt(){
+  const resellerName=prompt('Введите имя реселлера (кому назначить ключи):');
+  if(!resellerName)return;
+  const count=prompt('Сколько ключей создать?');
+  if(!count||isNaN(count))return;
+  
+  const numKeys=parseInt(count);
+  if(numKeys<1||numKeys>100){alert('Введите число от 1 до 100');return;}
+  
+  try{
+    for(let i=0;i<numKeys;i++){
+      const keyCode=generateKeyCode();
+      await db.collection('codes').doc(keyCode).set({
+        used:false,
+        deviceId:'',
+        assignedTo:resellerName,
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    alert(`✅ Создано ${numKeys} ключей для "${resellerName}"`);
+    loadAdminKeys();
+    loadAdminStats();
+  }catch(error){alert('Ошибка: '+error.message);}
+}
+
+async function changeAdminPassword(){
+  const newPassword=document.getElementById('newAdminPassword').value;
+  if(!newPassword){alert('Введите новый пароль');return;}
+  if(newPassword.length<6){alert('Пароль должен быть минимум 6 символов');return;}
+  
+  try{
+    const passwordHash=await hashPassword(newPassword);
+    await db.collection('admin_settings').doc('config').update({passwordHash:passwordHash});
+    alert('✅ Пароль изменён!');
+    document.getElementById('newAdminPassword').value='';
+  }catch(error){alert('Ошибка: '+error.message);}
+}
+
+function logoutAdmin(){
+  localStorage.removeItem('admin_authenticated');
+  localStorage.removeItem('admin_auth_time');
+  closeAdminPanel();
+}
 
 renderCalendar();renderSchedule();
 </script>
