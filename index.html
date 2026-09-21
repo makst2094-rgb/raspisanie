@@ -240,7 +240,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 .lesson-edit-item .edit-label{font-size:12px;color:#8e8e93;margin-bottom:10px;font-weight:600}
 .lesson-edit-row{display:flex;gap:8px;margin-bottom:8px}
 .lesson-edit-row input{flex:1;padding:10px 12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:13px}
-.delete-btn{width:40px;background:#ff3b30;color:white;border:none;border-radius:10px;cursor:pointer}
+.delete-btn{width:40px;background:#ff3b30;color:white;border:none;border-radius:10px;cursor:pointer;font-size:15px}
 .delete-btn:active{transform:scale(0.9)}
 .add-lesson-btn{background:#f2f2f7;color:#4a6cf7;width:100%;padding:12px;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
 .add-lesson-btn:active{transform:scale(0.97)}
@@ -486,7 +486,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <div class="page" id="pageReseller"><div class="reseller-page" id="resellerContent"></div></div>
 <div class="page" id="pageResellerLogin"><div style="padding:20px">
   <button class="reseller-back-btn" onclick="closeResellerLogin()">← Назад</button>
-  <h2 style="margin-bottom:20px">🔑 Вход для реселлеров</h2>
+  <h2 style="margin-bottom:20px"> Вход для реселлеров</h2>
   <div style="background:white;border-radius:16px;padding:20px">
     <div class="edit-field"><label>Твоё имя (выдал владелец)</label>
       <input type="text" id="resellerLoginName" placeholder="Например: Иван" style="width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;margin-bottom:12px">
@@ -500,21 +500,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
   <h2 style="margin-bottom:8px">👋 Привет, <span id="resellerNameDisplay"></span>!</h2>
   <p style="color:#8e8e93;margin-bottom:20px">Твои ключи и статистика</p>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
-    <div style="background:white;border-radius:16px;padding:16px;text-align:center">
-      <div style="font-size:28px;font-weight:700;color:#4a6cf7" id="statTotal">0</div>
-      <div style="font-size:12px;color:#8e8e93">Всего ключей</div>
-    </div>
-    <div style="background:white;border-radius:16px;padding:16px;text-align:center">
-      <div style="font-size:28px;font-weight:700;color:#22c55e" id="statUsed">0</div>
-      <div style="font-size:12px;color:#8e8e93">Продано</div>
-    </div>
-    <div style="background:white;border-radius:16px;padding:16px;text-align:center">
-      <div style="font-size:28px;font-weight:700;color:#ff9500" id="statFree">0</div>
-      <div style="font-size:12px;color:#8e8e93">Свободно</div>
-    </div>
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#4a6cf7" id="statTotal">0</div><div style="font-size:12px;color:#8e8e93">Всего ключей</div></div>
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#22c55e" id="statUsed">0</div><div style="font-size:12px;color:#8e8e93">Продано</div></div>
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#ff9500" id="statFree">0</div><div style="font-size:12px;color:#8e8e93">Свободно</div></div>
   </div>
   <div style="background:linear-gradient(135deg,#4a6cf7,#7c5cfc);border-radius:16px;padding:20px;color:white;margin-bottom:20px">
-    <div style="font-size:14px;opacity:0.9;margin-bottom:4px">💰 Твой заработок</div>
+    <div style="font-size:14px;opacity:0.9;margin-bottom:4px"> Твой заработок</div>
     <div style="font-size:32px;font-weight:700" id="statEarnings">0₽</div>
     <div style="font-size:13px;opacity:0.8;margin-top:4px">50₽ с каждого проданного ключа</div>
   </div>
@@ -599,7 +590,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;backg
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeEditModal()">
   <div class="modal">
     <div class="modal-header"><h2>Настройки</h2><button class="modal-close" onclick="closeEditModal()">✕</button></div>
-    <div class="edit-section"><h3> Подписка</h3><div class="subscription-info"><div class="subscription-info-text">Осталось дней:</div><div class="subscription-info-days" id="daysLeftDisplay">—</div></div></div>
+    <div class="edit-section"><h3>📅 Подписка</h3><div class="subscription-info"><div class="subscription-info-text">Осталось дней:</div><div class="subscription-info-days" id="daysLeftDisplay">—</div></div></div>
     <div class="edit-section"><h3>Параметры расписания</h3>
       <div class="edit-field"><label>Начало первого урока</label><input type="time" id="firstLessonStart" value="08:30"></div>
       <div class="edit-field"><label>Длительность урока (минут)</label><input type="number" id="lessonDuration" value="45" min="20" max="90"></div>
@@ -791,6 +782,10 @@ let selectedDate=new Date(2026,8,22);
 let currentGradeSubject=null,selectedGradeValue=null,currentGradeView='date';
 let currentLessonItem=null,currentLessonDate=null;
 let currentCdzId=null;
+let currentResellerName=null;
+let selectedPackage=null;
+let resellerClickCount=0;
+let resellerClickTimer=null;
 
 const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
 const monthNamesGenitive=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
@@ -999,7 +994,7 @@ function renderTasks(){
     });
     html+=`</div>`;
   }
-  if(!has)html+=`<div class="empty-day"><div class="empty-emoji">🎉</div><div class="empty-title">Заданий на эту неделю нет</div></div>`;
+  if(!has)html+=`<div class="empty-day"><div class="empty-emoji"></div><div class="empty-title">Заданий на эту неделю нет</div></div>`;
   container.innerHTML=html;
 }
 function toggleTask(dk,idx){if(!tasksData[dk])return;tasksData[dk][idx].done=!tasksData[dk][idx].done;renderTasks();}
@@ -1112,7 +1107,7 @@ function renderLessonsEditor(){
       <div class="lesson-edit-row"><input type="time" class="edit-start" value="${lesson.start}"><input type="time" class="edit-end" value="${lesson.end}"></div>
       <div class="lesson-edit-row"><input type="text" class="edit-room" value="${lesson.room}" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
       <div class="lesson-edit-row"><input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание"></div>
-      <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})">🗑</button></div></div>`;
+      <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})"></button></div></div>`;
   });
   container.innerHTML=html;container.dataset.lessonCount=schedule.length;
 }
@@ -1270,11 +1265,6 @@ function renderPortfolio(){
 }
 
 // ===== СИСТЕМА РЕСЕЛЛЕРОВ =====
-let selectedPackage=null;
-let resellerClickCount=0;
-let resellerClickTimer=null;
-let currentResellerName=null;
-
 document.querySelector('.avatar-wrapper').addEventListener('click',function(){
   resellerClickCount++;
   clearTimeout(resellerClickTimer);
@@ -1349,7 +1339,7 @@ function renderReseller(){
         <div class="reseller-benefit"><div class="reseller-benefit-icon">💸</div><div><div class="reseller-benefit-title">Быстрый заработок</div><div class="reseller-benefit-text">Продай 5 ключей за неделю — получи 250₽ чистыми</div></div></div>
         <div class="reseller-benefit"><div class="reseller-benefit-icon">📦</div><div><div class="reseller-benefit-title">Готовые материалы</div><div class="reseller-benefit-text">Дадим тексты, картинки и видео для продаж</div></div></div>
         <div class="reseller-benefit"><div class="reseller-benefit-icon">🎓</div><div><div class="reseller-benefit-title">Обучение продажам</div><div class="reseller-benefit-text">Покажем, как легко продавать в школе и соцсетях</div></div></div>
-        <div class="reseller-benefit"><div class="reseller-benefit-icon"></div><div><div class="reseller-benefit-title">Бонусы за активность</div><div class="reseller-benefit-text">Приведи друга-реселлера — получи 2 ключа бесплатно</div></div></div>
+        <div class="reseller-benefit"><div class="reseller-benefit-icon">🎁</div><div><div class="reseller-benefit-title">Бонусы за активность</div><div class="reseller-benefit-text">Приведи друга-реселлера — получи 2 ключа бесплатно</div></div></div>
       </div>
       <div class="reseller-section" id="resellerForm">
         <div class="reseller-form-title">📝 Подать заявку</div>
@@ -1371,6 +1361,20 @@ function renderReseller(){
       </div>
     </div>
   `;
+  setTimeout(addResellerLoginButton,100);
+}
+
+function addResellerLoginButton(){
+  const form=document.getElementById('resellerForm');
+  if(form&&!document.getElementById('resellerLoginBtn')){
+    const btn=document.createElement('button');
+    btn.id='resellerLoginBtn';
+    btn.className='reseller-submit';
+    btn.style.cssText='margin-top:12px;background:#f2f2f7;color:#000';
+    btn.textContent='🔑 Я уже реселлер — войти';
+    btn.onclick=openResellerLogin;
+    form.appendChild(btn);
+  }
 }
 
 function selectPackage(element,name,keys,price,profit){
@@ -1411,9 +1415,9 @@ async function submitResellerApplication(){
 }
 
 async function sendTelegramNotification(app){
-  if(!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN==='ВСТАВЬ_СЮДА_ТОКЕН_БОТА') return;
-  if(!TELEGRAM_CHAT_ID || TELEGRAM_CHAT_ID==='ВСТАВЬ_СЮДА_CHAT_ID') return;
-  const message=` <b>Новая заявка от реселлера!</b>\n\n👤 <b>Имя:</b> ${app.name}\n📱 <b>Контакт:</b> ${app.contact}\n🏫 <b>Школа:</b> ${app.school||'Не указана'}\n📦 <b>Пакет:</b> ${app.package.name}\n   • Ключей: ${app.package.keys}\n   • Цена: ${app.package.price}₽\n <b>Потенциальная прибыль:</b> ${app.package.profit}₽\n💬 <b>Причина:</b> ${app.why||'Не указана'}\n\n📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
+  if(!TELEGRAM_BOT_TOKEN||TELEGRAM_BOT_TOKEN==='ВСТАВЬ_СЮДА_ТОКЕН_БОТА')return;
+  if(!TELEGRAM_CHAT_ID||TELEGRAM_CHAT_ID==='ВСТАВЬ_СЮДА_CHAT_ID')return;
+  const message=`🔥 <b>Новая заявка от реселлера!</b>\n\n <b>Имя:</b> ${app.name}\n📱 <b>Контакт:</b> ${app.contact}\n🏫 <b>Школа:</b> ${app.school||'Не указана'}\n📦 <b>Пакет:</b> ${app.package.name}\n   • Ключей: ${app.package.keys}\n   • Цена: ${app.package.price}₽\n💰 <b>Потенциальная прибыль:</b> ${app.package.profit}₽\n💬 <b>Причина:</b> ${app.why||'Не указана'}\n\n📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
   try{await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TELEGRAM_CHAT_ID,text:message,parse_mode:'HTML'})});}catch(e){console.error('Telegram error:',e);}
 }
 
@@ -1432,7 +1436,7 @@ async function loadApplications(){
         <div class="reseller-app-name">${app.name}</div>
         <div class="reseller-app-contact">${app.contact}</div>
         <div class="reseller-app-school">${app.school||'Школа не указана'}</div>
-        <div style="font-size:12px;color:#8e8e93;margin-top:4px">📦 Пакет: ${app.package.name} (${app.package.keys} ключей, ${app.package.price}₽)</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px"> Пакет: ${app.package.name} (${app.package.keys} ключей, ${app.package.price}₽)</div>
         ${app.why?`<div style="font-size:12px;color:#8e8e93;margin-top:4px">"${app.why}"</div>`:''}
         <div style="font-size:11px;color:#8e8e93;margin-top:4px">📅 ${date}</div>
         <div class="reseller-app-status ${app.status}">${app.status==='pending'?'⏳ Ожидает':app.status==='approved'?'✅ Одобрено':'❌ Отклонено'}</div>
@@ -1469,15 +1473,10 @@ async function approveReseller(appId,name,contact,school,keys){
 
 async function rejectReseller(appId){
   if(!confirm('Отклонить заявку?'))return;
-  try{
-    await db.collection('reseller_applications').doc(appId).update({status:'rejected'});
-    loadApplications();
-  }catch(error){alert('Ошибка: '+error.message);}
+  try{await db.collection('reseller_applications').doc(appId).update({status:'rejected'});loadApplications();}catch(error){alert('Ошибка: '+error.message);}
 }
 
-function clearApplications(){
-  if(confirm('Удалить все заявки?')){localStorage.removeItem('reseller_applications');loadApplications();}
-}
+function clearApplications(){if(confirm('Удалить все заявки?')){localStorage.removeItem('reseller_applications');loadApplications();}}
 
 function openResellerLogin(){
   document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
@@ -1570,24 +1569,6 @@ function updateResellerStats(total,used,free){
 function copyKey(key){
   navigator.clipboard.writeText(key).then(()=>{alert('✅ Ключ скопирован: '+key);}).catch(()=>{const textarea=document.createElement('textarea');textarea.value=key;document.body.appendChild(textarea);textarea.select();document.execCommand('copy');document.body.removeChild(textarea);alert('✅ Ключ скопирован: '+key);});
 }
-
-// Добавляем кнопку входа для реселлеров на страницу партнёров
-const originalRenderReseller=renderReseller;
-renderReseller=function(){
-  originalRenderReseller();
-  setTimeout(()=>{
-    const form=document.getElementById('resellerForm');
-    if(form&&!document.getElementById('resellerLoginBtn')){
-      const btn=document.createElement('button');
-      btn.id='resellerLoginBtn';
-      btn.className='reseller-submit';
-      btn.style.cssText='margin-top:12px;background:#f2f2f7;color:#000';
-      btn.textContent='🔑 Я уже реселлер — войти';
-      btn.onclick=openResellerLogin;
-      form.appendChild(btn);
-    }
-  },100);
-};
 
 renderCalendar();renderSchedule();
 </script>
