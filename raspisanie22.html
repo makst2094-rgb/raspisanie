@@ -1,0 +1,1940 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Дневник</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;background:#f2f3f8;color:#000;max-width:430px;margin:0 auto;min-height:100vh}
+.lock-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1a1a3e,#3d3d7a);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 30px}
+.lock-screen.hidden{display:none!important}
+.lock-logo{width:80px;height:80px;border-radius:20px;background:linear-gradient(145deg,#4a6cf7,#7c5cfc);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.lock-logo svg{width:40px;height:40px;fill:white}
+.lock-title{font-size:28px;font-weight:700;color:white;margin-bottom:8px}
+.lock-subtitle,.lock-days-left,.lock-hint{font-size:14px;color:rgba(255,255,255,0.6);margin-bottom:16px;text-align:center}
+.lock-input-wrapper{width:100%;max-width:320px;margin-bottom:16px}
+.lock-input{width:100%;padding:16px;border:2px solid rgba(255,255,255,0.2);border-radius:14px;background:rgba(255,255,255,0.1);color:white;font-size:16px;outline:none}
+.lock-input:focus{border-color:#4a6cf7}
+.lock-input.error{border-color:#ff3b30;animation:shake 0.4s}
+.lock-btn{width:100%;max-width:320px;padding:16px;background:#4a6cf7;color:white;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:12px}
+.lock-btn:active{transform:scale(0.97)}
+.lock-btn:disabled{opacity:0.5}
+.lock-error{color:#ff6b6b;font-size:13px;min-height:18px;text-align:center;margin-bottom:8px}
+.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;margin-right:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardAppear{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(0.3)}50%{opacity:1;transform:scale(1.05)}70%{transform:scale(0.95)}100%{transform:scale(1)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes fabAppear{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes progressGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes slideInFromBottom{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;animation:fadeInDown 0.4s ease}
+.avatar-wrapper{position:relative;cursor:pointer;transition:transform 0.2s}
+.avatar-wrapper:active{transform:scale(0.95)}
+.avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(145deg,#1a1a3e,#2a2a5e,#3d3d7a);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.avatar-logo{display:grid;grid-template-columns:repeat(5,5px);grid-template-rows:repeat(5,5px);gap:1px}
+.avatar-logo .px{border-radius:1px}
+.px-1{background:#5b8def}.px-2{background:#4a7de0}.px-3{background:transparent}.px-4{background:#e85d75}.px-5{background:#d94f67}.px-6{background:#3d6fd4}.px-7{background:#2d5fc4}.px-8{background:#c44560}.px-9{background:#b53a55}
+.avatar-status{position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;background:#8e8e93;border-radius:50%;border:2.5px solid #f2f3f8}
+.user-info{flex:1;margin-left:12px;cursor:pointer}
+.user-name{font-size:16px;font-weight:600;color:#000}
+.user-status{font-size:13px;color:#8e8e93;margin-top:1px;font-weight:400}
+.header-right{display:flex;align-items:center;gap:10px}
+.notification-btn{position:relative;background:none;border:none;cursor:pointer;padding:4px;transition:transform 0.2s}
+.notification-btn:active{transform:scale(0.9)}
+.notification-btn svg{width:26px;height:26px}
+.notification-badge{position:absolute;top:-6px;right:-10px;background:#e8303a;color:white;font-size:11px;font-weight:700;padding:2px 6px;border-radius:12px;min-width:22px;text-align:center;animation:pulse 2s infinite}
+.menu-btn{background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center;transition:transform 0.2s}
+.menu-btn:active{transform:scale(0.9)}
+.menu-btn svg{width:24px;height:18px}
+.calendar{padding:6px 16px 12px;user-select:none;-webkit-user-select:none;touch-action:pan-y}
+.calendar-week{display:flex;justify-content:space-between}
+.calendar-day{text-align:center;flex:1;cursor:pointer;transition:transform 0.15s}
+.calendar-day:active{transform:scale(0.92)}
+.day-name{font-size:13px;color:#8e8e93;margin-bottom:8px;font-weight:400}
+.day-number{font-size:19px;font-weight:400;color:#000;width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin:0 auto;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1)}
+.day-number.selected{background:#4a6cf7;color:white;font-weight:500;transform:scale(1.05)}
+.day-number.weekend{color:#e8303a}
+.day-number.selected.weekend{background:#4a6cf7;color:white}
+.filters{display:flex;align-items:center;gap:10px;padding:2px 16px 14px;animation:fadeIn 0.4s ease 0.1s both}
+.filter-btn{padding:9px 16px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;background:white;color:#000;box-shadow:0 1px 2px rgba(0,0,0,0.04);font-family:inherit;transition:transform 0.15s}
+.filter-btn:active{transform:scale(0.95)}
+.filter-icon-btn{width:40px;height:40px;border-radius:12px;border:none;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;margin-left:auto;box-shadow:0 1px 2px rgba(0,0,0,0.04);transition:transform 0.15s}
+.filter-icon-btn:active{transform:scale(0.9)}
+.filter-icon-btn svg{width:22px;height:22px}
+.dots-btn{font-size:19px;letter-spacing:1px;color:#000;font-weight:600;cursor:pointer;background:none;border:none;font-family:inherit}
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.3s ease}
+.schedule,.grades-page,.tasks-page,.school-page,.portfolio-page,.reseller-page,.admin-page{padding:0 16px 100px}
+.lesson-card{background:white;border-radius:16px;padding:14px 18px 16px 20px;margin-bottom:2px;position:relative;opacity:0;animation:cardAppear 0.35s ease forwards;cursor:pointer;transition:transform 0.15s}
+.lesson-card:active{transform:scale(0.98)}
+.lesson-card:nth-child(1){animation-delay:0.05s}.lesson-card:nth-child(2){animation-delay:0.1s}.lesson-card:nth-child(3){animation-delay:0.15s}.lesson-card:nth-child(4){animation-delay:0.2s}.lesson-card:nth-child(5){animation-delay:0.25s}.lesson-card:nth-child(6){animation-delay:0.3s}.lesson-card:nth-child(7){animation-delay:0.35s}.lesson-card:nth-child(8){animation-delay:0.4s}.lesson-card:nth-child(9){animation-delay:0.45s}.lesson-card:nth-child(10){animation-delay:0.5s}
+.lesson-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:4px;background:#a0a0a5;border-radius:0 4px 4px 0}
+.lesson-info{display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:14px;color:#8e8e93;font-weight:400;flex-wrap:wrap}
+.lesson-subject{font-size:18px;font-weight:600;color:#000;margin-bottom:10px;line-height:1.3;letter-spacing:-0.2px}
+.lesson-subject.gray{color:#6e6e73}
+.lesson-badge{position:absolute;top:14px;right:14px;background:#e8e8ed;border-radius:10px;padding:4px 8px;display:flex;align-items:center;gap:4px}
+.lesson-badge .badge-num{font-size:15px;font-weight:600;color:#000}
+.lesson-badge .badge-sub{font-size:10px;color:#8e8e93;font-weight:500}
+.lesson-badge svg{width:14px;height:14px;fill:#8e8e93}
+.homework-section{display:flex;align-items:flex-start;gap:8px;margin-top:4px}
+.homework-icon{margin-top:1px;flex-shrink:0}
+.homework-icon svg{width:20px;height:20px;fill:#8e8e93}
+.homework-content{flex:1}
+.homework-title{font-size:15px;font-weight:500;color:#000;margin-bottom:3px}
+.homework-text{font-size:14px;color:#6e6e73;line-height:1.4;font-weight:400}
+.homework-pending{font-size:13px;font-weight:500;margin-top:4px}
+.homework-pending.orange{color:#ff6b00}
+.break-row{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;font-size:14px;color:#6e6e73;font-weight:400;opacity:0;animation:cardAppear 0.3s ease forwards}
+.break-left{display:flex;align-items:center;gap:6px}
+.break-icon svg{width:20px;height:20px;fill:#6e6e73}
+.section-title{font-size:18px;font-weight:600;color:#000;margin:12px 0 8px;letter-spacing:-0.2px;opacity:0;animation:cardAppear 0.3s ease forwards}
+.empty-day{text-align:center;padding:80px 20px 60px;animation:fadeIn 0.4s ease}
+.empty-emoji{font-size:64px;margin-bottom:16px;animation:bounceIn 0.5s ease}
+.empty-title{font-size:18px;font-weight:600;color:#000;margin-bottom:8px}
+.empty-subtitle{font-size:14px;color:#8e8e93;line-height:1.4;margin-bottom:24px;font-weight:400}
+.lesson-detail-page{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100vh;background:#7c5cfc;z-index:500;overflow-y:auto;display:none}
+.lesson-detail-page.active{display:block;animation:slideInFromBottom 0.3s ease}
+.lesson-detail-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+.back-btn{background:none;border:none;color:white;font-size:24px;cursor:pointer;padding:4px 8px}
+.back-btn:active{transform:scale(0.9)}
+.lesson-detail-title{color:white;font-size:17px;font-weight:600}
+.lesson-detail-spacer{width:40px}
+.lesson-detail-info{text-align:center;padding:8px 16px 16px}
+.lesson-detail-date{color:rgba(255,255,255,0.8);font-size:15px;font-weight:400;margin-bottom:8px}
+.lesson-detail-subject{color:white;font-size:28px;font-weight:700;letter-spacing:-0.5px;display:flex;align-items:center;justify-content:center;gap:10px}
+.play-btn{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.play-btn:active{transform:scale(0.9)}
+.play-btn svg{width:16px;height:16px;fill:white}
+.lesson-detail-actions{display:flex;gap:10px;padding:0 16px 16px}
+.action-btn{flex:1;background:rgba(255,255,255,0.15);border:none;border-radius:14px;padding:14px 12px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.action-btn:active{transform:scale(0.95);background:rgba(255,255,255,0.25)}
+.action-icon{width:40px;height:40px;border-radius:10px;background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.action-icon svg{width:22px;height:22px}
+.action-text{color:white;font-size:14px;font-weight:500;text-align:left}
+.lesson-detail-tabs{display:flex;background:rgba(255,255,255,0.1);border-radius:12px;margin:0 16px 16px;padding:3px}
+.tab-btn{flex:1;padding:10px;border:none;background:transparent;color:rgba(255,255,255,0.6);font-size:15px;font-weight:600;cursor:pointer;border-radius:10px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.tab-btn.active{background:white;color:#7c5cfc}
+.tab-badge{background:rgba(255,255,255,0.3);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.tab-btn.active .tab-badge{background:#7c5cfc;color:white}
+.lesson-detail-content{background:#f2f3f8;border-radius:20px 20px 0 0;min-height:calc(100vh - 340px);padding:20px 16px 100px}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn 0.25s ease}
+.topic-card{background:white;border-radius:16px;padding:18px;margin-bottom:16px}
+.topic-label{font-size:12px;font-weight:500;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.topic-edit-btn{background:none;border:none;color:#7c5cfc;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px}
+.topic-text{font-size:16px;font-weight:500;color:#000;line-height:1.4}
+.topic-hint{background:#7c5cfc;border-radius:14px;padding:14px 16px;margin-top:12px;display:flex;align-items:center;justify-content:space-between}
+.topic-hint-text{color:white;font-size:14px;font-weight:400;line-height:1.3}
+.topic-hint-close{background:none;border:none;color:rgba(255,255,255,0.6);font-size:20px;cursor:pointer;padding:4px}
+.section-label{font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px;display:flex;align-items:center;gap:8px}
+.teacher-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.teacher-card:active{background:#f9f9fb}
+.teacher-name{font-size:16px;font-weight:500;color:#000;flex:1}
+.result-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px;display:flex;align-items:center;gap:14px}
+.result-mark{width:44px;height:44px;border-radius:12px;background:#f2f3f8;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:#000}
+.result-text{font-size:15px;font-weight:400;color:#000}
+.material-card{background:white;border-radius:16px;padding:16px;margin-bottom:16px}
+.material-title{font-size:16px;font-weight:500;color:#000;margin-bottom:4px}
+.material-type{font-size:14px;color:#8e8e93;font-weight:400;margin-bottom:12px}
+.material-btn{width:100%;padding:14px;background:#e8e6ff;border:none;border-radius:12px;font-size:15px;font-weight:600;color:#4a3fbf;cursor:pointer;font-family:inherit}
+.material-btn:active{transform:scale(0.97)}
+.task-card{background:white;border-radius:16px;padding:18px;margin-bottom:16px}
+.task-checkbox{width:24px;height:24px;border-radius:6px;border:2px solid #d0d0d5;display:inline-flex;align-items:center;justify-content:center;margin-right:10px;flex-shrink:0;cursor:pointer}
+.task-checkbox.checked{background:#7c5cfc;border-color:#7c5cfc}
+.task-checkbox.checked::after{content:'✓';color:white;font-size:14px;font-weight:700}
+.task-text-row{display:flex;align-items:flex-start}
+.task-text{font-size:15px;font-weight:500;color:#000;line-height:1.4;flex:1}
+.task-edit-btn{background:none;border:none;color:#7c5cfc;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px;margin-top:8px}
+.task-date{font-size:13px;color:#8e8e93;margin-top:12px;font-weight:400;line-height:1.4}
+.task-share-btn{width:100%;padding:14px;background:#e8e6ff;border:none;border-radius:12px;font-size:15px;font-weight:600;color:#4a3fbf;cursor:pointer;font-family:inherit;margin-top:14px}
+.task-share-btn:active{transform:scale(0.97)}
+.answer-section-label{font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px}
+.answer-card{background:white;border-radius:16px;padding:24px 16px;text-align:center}
+.answer-text{font-size:14px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px}
+.week-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.week-nav-btn{background:white;border:none;width:40px;height:40px;border-radius:12px;font-size:19px;font-weight:600;color:#4a6cf7;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.week-nav-btn:active{transform:scale(0.9)}
+.week-nav-label{flex:1;text-align:center;background:white;border-radius:12px;padding:10px 16px;font-size:14px;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.today-btn{background:white;border:none;padding:10px 16px;border-radius:12px;font-size:14px;font-weight:600;color:#000;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.04);font-family:inherit}
+.today-btn:active{transform:scale(0.95)}
+.date-group{background:white;border-radius:16px;padding:16px;margin-bottom:12px;opacity:0;animation:cardAppear 0.35s ease forwards}
+.date-group:nth-child(2){animation-delay:0.05s}.date-group:nth-child(3){animation-delay:0.1s}.date-group:nth-child(4){animation-delay:0.15s}
+.date-group.today{border:2px solid #4a6cf7;padding:14px}
+.date-group-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.date-group-header-left{flex:1}
+.date-group-header-title{font-size:11px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px}
+.date-group-sub{font-size:12px;color:#8e8e93;margin-bottom:12px;font-weight:400}
+.share-btn{background:none;border:none;cursor:pointer;padding:4px}
+.share-btn:active{transform:scale(0.9)}
+.share-btn svg{width:20px;height:20px;fill:#8e8e93}
+.task-subject-name{font-size:17px;font-weight:600;color:#000;margin:14px 0 10px;letter-spacing:-0.2px}
+.task-subject-name:first-child{margin-top:4px}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0}
+.task-item-checkbox{width:22px;height:22px;border-radius:6px;border:2px solid #d0d0d5;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.task-item-checkbox.checked{background:#000;border-color:#000}
+.task-item-checkbox.checked::after{content:'✓';color:white;font-size:13px;font-weight:700}
+.task-item-text{flex:1;font-size:15px;font-weight:400;color:#000;line-height:1.4}
+.task-item-text.done{color:#8e8e93;text-decoration:line-through}
+.task-item-pending{font-size:13px;color:#8e8e93;margin-top:4px;font-weight:400}
+.grade-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #f0f0f5;cursor:pointer}
+.grade-row:active{background:#f9f9fb;border-radius:8px}
+.grade-row:last-child{border-bottom:none}
+.grade-box{width:42px;height:42px;background:#e8e8ed;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.grade-row:active .grade-box{transform:scale(0.92)}
+.grade-box .grade-val{font-size:19px;font-weight:500;color:#000}
+.grade-row-info{flex:1;min-width:0}
+.grade-row-subject{font-size:15px;font-weight:400;color:#000;margin-bottom:2px}
+.grade-row-desc{font-size:12px;color:#8e8e93;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:400}
+.grade-row-actions{display:flex;align-items:center;gap:8px}
+.chat-icon-small svg{width:20px;height:20px;fill:#8e8e93}
+.arrow-right{font-size:17px;color:#c7c7cc}
+.subject-card{background:white;border-radius:16px;padding:16px;margin-bottom:10px;opacity:0;animation:cardAppear 0.35s ease forwards}
+.subject-card:nth-child(1){animation-delay:0.05s}.subject-card:nth-child(2){animation-delay:0.1s}.subject-card:nth-child(3){animation-delay:0.15s}.subject-card:nth-child(4){animation-delay:0.2s}.subject-card:nth-child(5){animation-delay:0.25s}.subject-card:nth-child(6){animation-delay:0.3s}.subject-card:nth-child(7){animation-delay:0.35s}.subject-card:nth-child(8){animation-delay:0.4s}.subject-card:nth-child(9){animation-delay:0.45s}.subject-card:nth-child(10){animation-delay:0.5s}
+.subject-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2px}
+.subject-name{font-size:15px;font-weight:400;color:#000;flex:1;padding-right:12px;line-height:1.3}
+.subject-avg-box{width:54px;height:42px;border:1.5px dashed #c7c7cc;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:#000;flex-shrink:0;position:relative}
+.subject-avg-box .trend-down{position:absolute;left:-14px;top:50%;transform:translateY(-50%);color:#ff3b30;font-size:12px}
+.subject-semester{font-size:12px;color:#8e8e93;margin-bottom:10px;font-weight:400}
+.progress-bar{width:100%;height:8px;background:#e8e8ed;border-radius:4px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;background:#00a82d;border-radius:4px;animation:progressGrow 0.6s ease forwards;transform-origin:left}
+.progress-text{font-size:12px;color:#8e8e93;font-weight:400}
+.progress-text.achieved{color:#00a82d;font-weight:400}
+.add-grade-fab{position:fixed;bottom:140px;right:18px;width:50px;height:50px;border-radius:50%;background:#4a6cf7;color:white;border:none;cursor:pointer;box-shadow:0 4px 14px rgba(74,108,247,0.35);z-index:50;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:300;animation:fabAppear 0.4s ease}
+.add-grade-fab:active{transform:scale(0.9)}
+.segmented-control{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:398px;background:#e8e8ed;border-radius:12px;display:flex;padding:3px;z-index:90;animation:slideUp 0.3s ease}
+.segment-btn{flex:1;padding:10px;background:transparent;border:none;font-size:14px;font-weight:600;color:#8e8e93;cursor:pointer;border-radius:10px;font-family:inherit}
+.segment-btn.active{background:white;color:#000;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:white;border-top:0.5px solid #e5e5ea;display:flex;justify-content:space-around;padding:6px 0 26px;z-index:100}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;padding:4px 10px}
+.nav-item:active{transform:scale(0.9)}
+.nav-icon{width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+.nav-icon svg{width:26px;height:26px}
+.nav-icon svg path,.nav-icon svg rect,.nav-icon svg circle,.nav-icon svg line,.nav-icon svg polygon{fill:none;stroke:#8e8e93;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav-item.active .nav-icon svg path,.nav-item.active .nav-icon svg rect,.nav-item.active .nav-icon svg circle,.nav-item.active .nav-icon svg polygon{stroke:none;fill:#000}
+.nav-icon-check{width:26px;height:26px;border-radius:50%;border:2px solid #8e8e93;display:flex;align-items:center;justify-content:center}
+.nav-icon-check svg{width:14px;height:14px}
+.nav-icon-check svg path{stroke:#8e8e93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.nav-item.active .nav-icon-check{background:#000;border-color:#000}
+.nav-item.active .nav-icon-check svg path{stroke:white}
+.nav-label{font-size:10px;color:#8e8e93;font-weight:500}
+.nav-item.active .nav-label{color:#000;font-weight:600}
+.grade-modal-overlay,.modal-overlay,.cdz-detail-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:700;align-items:flex-end;justify-content:center}
+.grade-modal-overlay.show,.modal-overlay.show,.cdz-detail-overlay.show{display:flex}
+.grade-modal,.modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h2{font-size:19px;font-weight:600}
+.modal-close{background:#f2f2f7;border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px}
+.edit-section{margin-bottom:20px}
+.edit-section h3{font-size:15px;font-weight:600;margin-bottom:12px}
+.edit-field{margin-bottom:14px}
+.edit-field label{display:block;font-size:12px;color:#8e8e93;margin-bottom:6px}
+.edit-field input,.edit-field textarea,.edit-field select{width:100%;padding:12px 14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;font-family:inherit}
+.edit-field input:focus,.edit-field textarea:focus,.edit-field select:focus{outline:none;border-color:#4a6cf7;background:white}
+.lesson-edit-item{background:#f9f9fb;border-radius:12px;padding:14px;margin-bottom:10px}
+.lesson-edit-item .edit-label{font-size:12px;color:#8e8e93;margin-bottom:10px;font-weight:600}
+.lesson-edit-row{display:flex;gap:8px;margin-bottom:8px}
+.lesson-edit-row input{flex:1;padding:10px 12px;border:1.5px solid #e5e5ea;border-radius:10px;font-size:13px}
+.delete-btn{width:40px;background:#ff3b30;color:white;border:none;border-radius:10px;cursor:pointer}
+.delete-btn:active{transform:scale(0.9)}
+.add-lesson-btn{background:#f2f2f7;color:#4a6cf7;width:100%;padding:12px;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+.add-lesson-btn:active{transform:scale(0.97)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.modal-actions button{flex:1;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer}
+.modal-actions button:active{transform:scale(0.95)}
+.btn-reset{background:#f2f2f7}
+.btn-save{background:#4a6cf7;color:white}
+.subscription-info{background:#f9f9fb;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.subscription-info-text{font-size:13px;color:#8e8e93}
+.subscription-info-days{font-size:14px;font-weight:600;color:#4a6cf7}
+.subscription-info-days.warning{color:#ff9500}
+.subscription-info-days.danger{color:#ff3b30}
+.cdz-materials-header{font-size:12px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;margin-top:20px;display:flex;align-items:center;gap:8px}
+.cdz-materials-header .badge-count{background:#ff9500;color:white;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.cdz-material-card{background:white;border-radius:16px;padding:18px;margin-bottom:12px}
+.cdz-material-title{font-size:17px;font-weight:600;color:#000;line-height:1.3;margin-bottom:6px}
+.cdz-material-type{font-size:14px;color:#8e8e93;margin-bottom:16px}
+.cdz-material-stats{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cdz-material-score{background:#e8f5e9;color:#2e7d32;padding:6px 12px;border-radius:8px;font-size:14px;font-weight:700}
+.cdz-material-score.low{background:#fff3e0;color:#e65100}
+.cdz-material-score.fail{background:#ffebee;color:#c62828}
+.cdz-material-date{font-size:13px;color:#8e8e93}
+.cdz-material-buttons{display:flex;gap:10px}
+.cdz-material-btn{flex:1;padding:12px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;background:#e8e6ff;color:#4a3fbf}
+.cdz-material-btn:active{transform:scale(0.97)}
+.cdz-add-btn{width:100%;padding:12px;background:#f2f2f7;color:#7c5cfc;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px}
+.cdz-add-btn:active{transform:scale(0.97)}
+.cdz-detail-modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;overflow-y:auto}
+.cdz-detail-header{background:linear-gradient(135deg,#9b59b6,#7d3c98);padding:24px 20px 20px;border-radius:20px 20px 0 0;position:relative;min-height:160px}
+.cdz-detail-header::before{content:'';position:absolute;top:0;right:0;width:100px;height:100px;background:rgba(255,255,255,0.08);border-radius:50%;transform:translate(40%,-40%)}
+.cdz-detail-header::after{content:'';position:absolute;top:12px;right:12px;width:50px;height:50px;background:rgba(255,215,0,0.25);clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.cdz-detail-score-box{background:white;border-radius:14px;padding:20px 24px;position:relative;z-index:1;display:inline-block}
+.cdz-detail-score{font-size:52px;font-weight:700;color:#000;line-height:1}
+.cdz-detail-score-total{font-size:34px;font-weight:400;color:#bdc3c7}
+.cdz-detail-score-label{font-size:14px;color:#7f8c8d;margin-top:4px}
+.cdz-detail-percent{position:absolute;bottom:12px;right:12px;background:#9b59b6;color:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.cdz-detail-body{padding:20px}
+.cdz-detail-title{font-size:17px;font-weight:600;color:#000;margin-bottom:14px}
+.cdz-detail-time{display:flex;align-items:center;gap:8px;font-size:14px;color:#8e8e93;margin-bottom:16px}
+.cdz-detail-time svg{width:18px;height:18px;fill:#8e8e93}
+.cdz-detail-stats{display:flex;gap:12px;margin-bottom:16px}
+.cdz-detail-stat-box{flex:1;background:#f8f9fa;border-radius:10px;padding:12px;border-left:4px solid #27ae60}
+.cdz-detail-stat-label{font-size:12px;color:#8e8e93;margin-bottom:4px}
+.cdz-detail-stat-value{font-size:20px;font-weight:600;color:#000}
+.cdz-detail-status,.cdz-detail-datetime{font-size:13px;color:#8e8e93;margin-bottom:4px}
+.cdz-detail-buttons{display:flex;gap:10px}
+.cdz-detail-buttons button{flex:1;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+.cdz-detail-buttons button:active{transform:scale(0.97)}
+.cdz-detail-btn-pass{background:#e8e6ff;color:#4a3fbf}
+.cdz-detail-btn-close{background:#f2f2f7;color:#000}
+.services-section{margin-bottom:24px}
+.services-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding-top:8px}
+.services-title{font-size:13px;font-weight:600;color:#8e8e93;text-transform:uppercase;letter-spacing:0.3px}
+.services-expand{font-size:13px;font-weight:500;color:#4a6cf7;cursor:pointer;display:flex;align-items:center;gap:4px}
+.services-expand svg{width:16px;height:16px;fill:#4a6cf7}
+.services-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;background:white;border-radius:20px;padding:16px}
+.service-item{background:#fafafa;border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;transition:transform 0.15s,background 0.15s}
+.service-item:active{transform:scale(0.95);background:#f0f0f0}
+.service-icon{width:56px;height:56px;margin:0 auto 8px;border-radius:14px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.service-icon svg{width:32px;height:32px}
+.service-name{font-size:13px;font-weight:500;color:#000;line-height:1.2}
+.today-section{margin-bottom:20px}
+.today-header{font-size:13px;font-weight:600;color:#8e8e93;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.3px}
+.today-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.today-card{background:white;border-radius:20px;padding:16px}
+.today-card-title{font-size:11px;font-weight:700;margin-bottom:12px;text-transform:uppercase;padding:6px 10px;border-radius:10px;display:inline-block;letter-spacing:0.3px}
+.today-card-title.purple{background:#f3e8ff;color:#7c3aed}
+.today-card-title.pink{background:#fce7f3;color:#db2777}
+.today-card-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid #f0f0f5}
+.today-card-row:last-child{border-bottom:none}
+.today-card-label{font-size:14px;color:#6e6e73;font-weight:400}
+.today-card-value{font-size:14px;font-weight:600;color:#000}
+.rating-card{background:white;border-radius:20px;padding:16px;margin-bottom:12px}
+.rating-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid #f0f0f5}
+.rating-item:last-child{border-bottom:none}
+.rating-position{width:36px;height:36px;border-radius:10px;background:#f0f0f5;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#000}
+.rating-position.active{background:#8b5cf6;color:white}
+.rating-bar{flex:1;height:36px;background:#f0f0f5;border-radius:18px;overflow:hidden;position:relative}
+.rating-bar-fill{height:100%;background:#8b5cf6;border-radius:18px;transition:width 0.6s ease}
+.rating-bar-user{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:white;border-radius:18px;padding:4px 12px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+.rating-bar-user img{width:24px;height:24px;border-radius:50%}
+.rating-score{font-size:18px;font-weight:700;color:#000;width:60px;text-align:right}
+.balance-card{background:white;border-radius:20px;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.balance-label{font-size:11px;font-weight:700;text-transform:uppercase;padding:6px 10px;border-radius:10px;background:#dcfce7;color:#16a34a;letter-spacing:0.3px}
+.balance-value{font-size:20px;font-weight:700;color:#000}
+.portfolio-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.portfolio-tab{padding:10px 16px;border-radius:12px;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;background:white;color:#000;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.portfolio-tab.active{background:#4f46e5;color:white}
+.portfolio-section{margin-bottom:20px}
+.portfolio-section-title{font-size:16px;font-weight:600;color:#000;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.portfolio-section-title svg{width:20px;height:20px;fill:#8e8e93}
+.radar-card{background:white;border-radius:16px;padding:20px}
+.radar-chart{width:280px;height:280px;margin:0 auto 20px;position:relative}
+.radar-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;height:80px;background:white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#000;z-index:10}
+.radar-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid #f0f0f5}
+.radar-item:last-child{border-bottom:none}
+.radar-dot{width:12px;height:12px;border-radius:50%}
+.radar-dot.blue{background:#8b5cf6}
+.radar-dot.purple{background:#a78bfa}
+.radar-dot.pink{background:#f472b6}
+.radar-label{flex:1;font-size:15px;color:#000}
+.radar-value{font-size:15px;font-weight:600;color:#000}
+.diagnostics-section{margin-bottom:20px}
+.diagnostic-card{background:white;border-radius:16px;padding:16px;margin-bottom:12px}
+.diagnostic-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.diagnostic-subject{font-size:14px;color:#8e8e93}
+.diagnostic-date{font-size:13px;color:#8e8e93}
+.diagnostic-title{font-size:15px;font-weight:500;color:#000;margin-bottom:12px;line-height:1.4}
+.diagnostic-result{display:flex;align-items:center;justify-content:space-between}
+.diagnostic-result-text{font-size:14px;color:#8e8e93}
+.diagnostic-grade{font-size:14px;color:#ef4444;font-weight:500}
+.circular-progress{width:48px;height:48px;position:relative}
+.circular-progress svg{transform:rotate(-90deg)}
+.circular-progress-bg{fill:none;stroke:#e5e7eb;stroke-width:4}
+.circular-progress-bar{fill:none;stroke:#ef4444;stroke-width:4;stroke-linecap:round}
+.empty-state{background:white;border-radius:16px;padding:40px 20px;text-align:center}
+.empty-state-text{font-size:14px;color:#8e8e93;margin-top:8px}
+.subject-list-item{padding:14px;background:#f9f9fb;border-radius:12px;margin-bottom:8px;font-size:13px;font-weight:400;cursor:pointer}
+.subject-list-item:active{background:#e8e8ed}
+.grade-select{display:flex;gap:10px;margin-bottom:16px}
+.grade-option{flex:1;padding:16px;border-radius:14px;border:2px solid #e5e5ea;background:white;font-size:21px;font-weight:500;cursor:pointer;text-align:center;font-family:inherit}
+.grade-option:active{transform:scale(0.92)}
+.grade-option.sel-5{border-color:#34c759;background:#34c759;color:white}
+.grade-option.sel-4{border-color:#4a6cf7;background:#4a6cf7;color:white}
+.grade-option.sel-3{border-color:#ff9500;background:#ff9500;color:white}
+.grade-option.sel-2{border-color:#ff3b30;background:#ff3b30;color:white}
+.grade-date-input,.grade-desc-input{width:100%;padding:12px 14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;background:#f9f9fb;font-family:inherit;margin-bottom:12px}
+.grade-modal-actions{display:flex;gap:10px}
+.grade-modal-actions button{flex:1;padding:14px;border:none;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.grade-modal-actions button:active{transform:scale(0.95)}
+.grade-cancel{background:#f2f2f7;color:#000}
+.grade-confirm{background:#4a6cf7;color:white}
+.reseller-hero{background:linear-gradient(135deg,#4a6cf7 0%,#7c5cfc 100%);border-radius:20px;padding:24px;color:white;margin-bottom:20px;position:relative;overflow:hidden}
+.reseller-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:rgba(255,255,255,0.1);border-radius:50%}
+.reseller-hero-title{font-size:24px;font-weight:700;margin-bottom:8px;position:relative;z-index:1}
+.reseller-hero-subtitle{font-size:14px;opacity:0.9;position:relative;z-index:1}
+.reseller-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.reseller-stat-card{background:white;border-radius:16px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.reseller-stat-value{font-size:28px;font-weight:700;color:#4a6cf7;margin-bottom:4px}
+.reseller-stat-label{font-size:12px;color:#8e8e93}
+.reseller-section{background:white;border-radius:16px;padding:20px;margin-bottom:16px}
+.reseller-section-title{font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.reseller-benefit{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.reseller-benefit:last-child{margin-bottom:0}
+.reseller-benefit-icon{width:40px;height:40px;border-radius:10px;background:#e8e6ff;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.reseller-benefit-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.reseller-benefit-text{font-size:13px;color:#8e8e93;line-height:1.4}
+.reseller-form-title{font-size:18px;font-weight:600;margin-bottom:16px}
+.reseller-input{width:100%;padding:14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;font-family:inherit;margin-bottom:12px;transition:border-color 0.2s}
+.reseller-input:focus{outline:none;border-color:#4a6cf7}
+.reseller-textarea{width:100%;padding:14px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;font-family:inherit;margin-bottom:12px;resize:vertical;min-height:80px;transition:border-color 0.2s}
+.reseller-textarea:focus{outline:none;border-color:#4a6cf7}
+.reseller-submit{width:100%;padding:16px;background:#4a6cf7;color:white;border:none;border-radius:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:transform 0.15s}
+.reseller-submit:active{transform:scale(0.97)}
+.reseller-submit:disabled{opacity:0.5}
+.reseller-success{background:#dcfce7;border-radius:16px;padding:24px;text-align:center;margin-bottom:16px}
+.reseller-success-icon{font-size:48px;margin-bottom:12px}
+.reseller-success-title{font-size:18px;font-weight:600;color:#16a34a;margin-bottom:8px}
+.reseller-success-text{font-size:14px;color:#8e8e93}
+.reseller-back-btn{background:#f2f2f7;color:#000;border:none;padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:20px;font-family:inherit}
+.reseller-back-btn:active{transform:scale(0.97)}
+.reseller-hint{background:#fef3c7;border-radius:12px;padding:12px 16px;font-size:13px;color:#92400e;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.reseller-packages{display:grid;gap:12px;margin-bottom:20px}
+.reseller-package{background:white;border-radius:16px;padding:16px;border:2px solid #e5e5ea;cursor:pointer;transition:all 0.2s}
+.reseller-package:hover{border-color:#4a6cf7}
+.reseller-package.selected{border-color:#4a6cf7;background:#eef2ff}
+.reseller-package-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.reseller-package-name{font-size:16px;font-weight:600}
+.reseller-package-price{font-size:20px;font-weight:700;color:#4a6cf7}
+.reseller-package-desc{font-size:13px;color:#8e8e93}
+.reseller-package-profit{font-size:12px;color:#16a34a;font-weight:600;margin-top:4px}
+.reseller-admin{background:#f9f9fb;border-radius:16px;padding:16px;margin-top:20px}
+.reseller-admin-title{font-size:14px;font-weight:600;margin-bottom:12px;color:#8e8e93}
+.reseller-app-item{background:white;border-radius:12px;padding:12px;margin-bottom:8px}
+.reseller-app-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.reseller-app-contact{font-size:13px;color:#4a6cf7;margin-bottom:4px}
+.reseller-app-school{font-size:12px;color:#8e8e93}
+.reseller-app-status{display:inline-block;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600;margin-top:4px}
+.reseller-app-status.pending{background:#fef3c7;color:#92400e}
+.reseller-app-status.approved{background:#dcfce7;color:#16a34a}
+.reseller-app-status.rejected{background:#ffebee;color:#c62828}
+.reseller-key-card{background:white;border-radius:16px;padding:16px;margin-bottom:12px}
+.reseller-key-code{font-size:18px;font-weight:700;color:#000;font-family:monospace;margin-bottom:8px}
+.reseller-key-status{display:inline-block;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:600}
+.reseller-key-status.free{background:#dcfce7;color:#16a34a}
+.reseller-key-status.used{background:#f2f2f7;color:#8e8e93}
+.reseller-copy-btn{width:100%;padding:10px;background:#4a6cf7;color:white;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+.reseller-copy-btn:active{transform:scale(0.97)}
+.admin-hero{background:linear-gradient(135deg,#1a1a3e 0%,#3d3d7a 100%);border-radius:20px;padding:24px;color:white;margin-bottom:20px;position:relative;overflow:hidden}
+.admin-hero::before{content:'';position:absolute;top:-50px;right:-50px;width:150px;height:150px;background:rgba(255,255,255,0.1);border-radius:50%}
+.admin-hero-title{font-size:24px;font-weight:700;margin-bottom:8px;position:relative;z-index:1}
+.admin-hero-subtitle{font-size:14px;opacity:0.9;position:relative;z-index:1}
+.admin-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px}
+.admin-stat-card{background:white;border-radius:16px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.04)}
+.admin-stat-value{font-size:28px;font-weight:700;color:#4a6cf7;margin-bottom:4px}
+.admin-stat-label{font-size:12px;color:#8e8e93}
+.admin-tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.admin-tab{padding:10px 16px;border-radius:12px;border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;background:white;color:#000;box-shadow:0 1px 2px rgba(0,0,0,0.04)}
+.admin-tab.active{background:#4a6cf7;color:white}
+.admin-section{background:white;border-radius:16px;padding:20px;margin-bottom:16px}
+.admin-section-title{font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.admin-key-item{background:#f9f9fb;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.admin-key-code{font-family:monospace;font-size:14px;font-weight:600;color:#000}
+.admin-key-status{font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px}
+.admin-key-status.free{background:#dcfce7;color:#16a34a}
+.admin-key-status.used{background:#f2f2f7;color:#8e8e93}
+.admin-key-duration{font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px;background:#e8e6ff;color:#4a3fbf;margin-left:8px}
+.admin-btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
+.admin-btn:active{transform:scale(0.95)}
+.admin-btn-primary{background:#4a6cf7;color:white}
+.admin-btn-danger{background:#ff3b30;color:white}
+.admin-btn-success{background:#22c55e;color:white}
+.admin-input{width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;font-family:inherit;margin-bottom:12px}
+.admin-input:focus{outline:none;border-color:#4a6cf7}
+.price-table{width:100%;border-collapse:collapse;font-size:13px}
+.price-table th{text-align:left;padding:8px;color:#8e8e93;border-bottom:1px solid #e5e5ea;font-weight:600}
+.price-table td{padding:8px;border-bottom:1px solid #f0f0f5}
+.price-table tr:last-child td{border-bottom:none}
+.price-profit{color:#16a34a;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-logo"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg></div>
+  <div class="lock-title">Дневник</div>
+  <div class="lock-subtitle" id="lockSubtitle">Проверка устройства...</div>
+  <div class="lock-days-left" id="lockDaysLeft"></div>
+  <div class="lock-input-wrapper" id="lockInputWrapper" style="display:none">
+    <input type="text" class="lock-input" id="lockPasswordInput" placeholder="Код доступа" autocomplete="off">
+  </div>
+  <div class="lock-error" id="lockError"></div>
+  <button class="lock-btn" id="lockBtn" onclick="checkPassword()" style="display:none">Разблокировать</button>
+  <div class="lock-hint" id="lockHint" style="display:none">Код выдаётся после оплаты (доступ на 1/3/30 дней)</div>
+</div>
+
+<div class="header">
+  <div style="display:flex;align-items:center;flex:1;min-width:0;">
+    <div class="avatar-wrapper" onclick="openNameModal()">
+      <div class="avatar"><div class="avatar-logo">
+        <div class="px px-3"></div><div class="px px-1"></div><div class="px px-2"></div><div class="px px-3"></div><div class="px px-3"></div>
+        <div class="px px-1"></div><div class="px px-2"></div><div class="px px-7"></div><div class="px px-6"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-7"></div><div class="px px-4"></div><div class="px px-5"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-6"></div><div class="px px-8"></div><div class="px px-9"></div><div class="px px-3"></div>
+        <div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div><div class="px px-3"></div>
+      </div></div>
+      <div class="avatar-status"></div>
+    </div>
+    <div class="user-info" onclick="openNameModal()">
+      <div class="user-name" id="userName">-</div>
+      <div class="user-status">не в школе</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="notification-btn"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><span class="notification-badge">99+</span></button>
+    <button class="menu-btn"><svg viewBox="0 0 24 18" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><line x1="2" y1="3" x2="22" y2="3"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="15" x2="22" y2="15"/></svg></button>
+  </div>
+</div>
+
+<div class="calendar" id="calendarBlock"><div class="calendar-week" id="calendarWeek"></div></div>
+<div class="filters" id="filtersBlock">
+  <button class="filter-btn" id="monthBtn">Сентябрь</button>
+  <button class="filter-btn active" onclick="goToday()">Сегодня</button>
+  <button class="filter-icon-btn"><svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" fill="#e8303a"/><path d="M14 2v6h6" fill="none" stroke="#e8303a" stroke-width="1.5"/><text x="7.5" y="18" font-size="6.5" font-weight="800" fill="white" font-family="sans-serif">PDF</text></svg></button>
+  <button class="filter-icon-btn dots-btn" onclick="openEditModal()">···</button>
+</div>
+
+<div class="page active" id="pageSchedule"><div class="schedule" id="schedule"></div></div>
+<div class="page" id="pageGrades"><div class="grades-page" id="gradesContent"></div></div>
+<div class="page" id="pageTasks"><div class="tasks-page" id="tasksContent"></div></div>
+<div class="page" id="pageSchool"><div class="school-page" id="schoolContent"></div></div>
+<div class="page" id="pagePortfolio"><div class="portfolio-page" id="portfolioContent"></div></div>
+<div class="page" id="pageReseller"><div class="reseller-page" id="resellerContent"></div></div>
+<div class="page" id="pageResellerLogin"><div style="padding:20px">
+  <button class="reseller-back-btn" onclick="closeResellerLogin()">← Назад</button>
+  <h2 style="margin-bottom:20px">🔑 Вход для реселлеров</h2>
+  <div style="background:white;border-radius:16px;padding:20px">
+    <div class="edit-field"><label>Твоё имя (выдал владелец)</label>
+      <input type="text" id="resellerLoginName" placeholder="Например: Иван" style="width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;margin-bottom:12px">
+    </div>
+    <button onclick="resellerLogin()" style="width:100%;padding:14px;background:#4a6cf7;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">Войти</button>
+    <div id="resellerLoginError" style="color:#ff3b30;font-size:13px;margin-top:12px;text-align:center;display:none"></div>
+  </div>
+</div></div>
+<div class="page" id="pageResellerDashboard"><div style="padding:20px">
+  <button class="reseller-back-btn" onclick="closeResellerDashboard()">← Выйти</button>
+  <h2 style="margin-bottom:8px">👋 Привет, <span id="resellerNameDisplay"></span>!</h2>
+  <p style="color:#8e8e93;margin-bottom:20px">Твои ключи и статистика</p>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#4a6cf7" id="statTotal">0</div><div style="font-size:12px;color:#8e8e93">Всего ключей</div></div>
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#22c55e" id="statUsed">0</div><div style="font-size:12px;color:#8e8e93">Продано</div></div>
+    <div style="background:white;border-radius:16px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:700;color:#ff9500" id="statFree">0</div><div style="font-size:12px;color:#8e8e93">Свободно</div></div>
+  </div>
+  <div style="background:linear-gradient(135deg,#4a6cf7,#7c5cfc);border-radius:16px;padding:20px;color:white;margin-bottom:20px">
+    <div style="font-size:14px;opacity:0.9;margin-bottom:4px">💰 Твой заработок</div>
+    <div style="font-size:32px;font-weight:700" id="statEarnings">0₽</div>
+    <div style="font-size:13px;opacity:0.8;margin-top:4px">50₽ с каждого проданного ключа</div>
+  </div>
+  <h3 style="margin-bottom:12px">🔑 Твои ключи</h3>
+  <div id="resellerKeysList"></div>
+  <div style="background:#fef3c7;border-radius:12px;padding:16px;margin-top:20px">
+    <div style="font-size:14px;font-weight:600;color:#92400e;margin-bottom:8px">📋 Как продавать:</div>
+    <ol style="font-size:13px;color:#92400e;line-height:1.6;padding-left:20px">
+      <li>Скопируй свободный ключ (кнопка "Копировать")</li>
+      <li>Отправь его покупателю</li>
+      <li>Покупатель вводит ключ на сайте</li>
+      <li>Ключ автоматически помечается как "Продан"</li>
+      <li>Ты получаешь 50₽ с каждой продажи</li>
+    </ol>
+  </div>
+</div></div>
+
+<div class="page" id="pageAdminLogin"><div style="padding:20px">
+  <button class="reseller-back-btn" onclick="closeAdminLogin()">← Назад</button>
+  <h2 style="margin-bottom:20px">🔐 Вход в админ-панель</h2>
+  <div style="background:white;border-radius:16px;padding:20px">
+    <div class="edit-field"><label>Пароль администратора</label>
+      <input type="password" id="adminPasswordInput" placeholder="Введите пароль" style="width:100%;padding:12px;border:1.5px solid #e5e5ea;border-radius:12px;font-size:14px;margin-bottom:12px">
+    </div>
+    <button onclick="adminLogin()" style="width:100%;padding:14px;background:#1a1a3e;color:white;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer">Войти</button>
+    <div id="adminLoginError" style="color:#ff3b30;font-size:13px;margin-top:12px;text-align:center;display:none"></div>
+  </div>
+</div></div>
+
+<div class="page" id="pageAdmin"><div class="admin-page" id="adminContent"></div></div>
+
+<div class="lesson-detail-page" id="lessonDetailPage">
+  <div class="lesson-detail-header">
+    <button class="back-btn" onclick="closeLessonDetail()">‹</button>
+    <div class="lesson-detail-title">Урок</div>
+    <div class="lesson-detail-spacer"></div>
+  </div>
+  <div class="lesson-detail-info">
+    <div class="lesson-detail-date" id="ldDate"></div>
+    <div class="lesson-detail-subject"><span id="ldSubject"></span><button class="play-btn"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></button></div>
+  </div>
+  <div class="lesson-detail-actions">
+    <button class="action-btn"><div class="action-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" fill="#7c5cfc"/><path d="M2 12l10 5 10-5" stroke="#7c5cfc" stroke-width="2" fill="none"/><path d="M2 17l10 5 10-5" stroke="#7c5cfc" stroke-width="2" fill="none"/></svg></div><div class="action-text">Подборки к теме</div></button>
+    <button class="action-btn"><div class="action-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#7c5cfc"/><path d="M12 16v-4M12 8h.01" stroke="white" stroke-width="2" stroke-linecap="round"/></svg></div><div class="action-text">Информация об уроке</div></button>
+  </div>
+  <div class="lesson-detail-tabs">
+    <button class="tab-btn active" onclick="switchLessonTab('lesson',this)">Урок</button>
+    <button class="tab-btn" onclick="switchLessonTab('tasks',this)">Задания <span class="tab-badge" id="taskBadge">1</span></button>
+  </div>
+  <div class="lesson-detail-content">
+    <div class="tab-content active" id="tabLesson">
+      <div class="topic-card">
+        <div class="topic-label">Тема <button class="topic-edit-btn" onclick="editTopic()">Изменить</button></div>
+        <div class="topic-text" id="ldTopic"></div>
+        <div class="topic-hint" id="topicHint"><div class="topic-hint-text">Интересна тема? В подборках есть материалы!</div><button class="topic-hint-close" onclick="document.getElementById('topicHint').style.display='none'">✕</button></div>
+      </div>
+      <div id="cdzMaterialsContainer"></div>
+      <div class="section-label">Учитель</div>
+      <div class="teacher-card" onclick="editTeacher()"><div class="teacher-name" id="ldTeacher"></div></div>
+      <div class="section-label">Результаты урока</div>
+      <div class="result-card"><div class="result-mark">Н</div><div class="result-text">Отсутствие на уроке</div></div>
+      <div class="section-label">Материалы для изучения <span style="background:#7c5cfc;color:white;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;margin-left:6px;vertical-align:middle">1</span></div>
+      <div class="material-card"><div class="material-title" id="ldMaterial"></div><div class="material-type">Видеоурок</div><button class="material-btn">Изучить</button></div>
+    </div>
+    <div class="tab-content" id="tabTasks">
+      <div class="task-card">
+        <div class="task-text-row"><div class="task-checkbox" onclick="this.classList.toggle('checked')"></div><div class="task-text" id="ldTaskText"></div></div>
+        <button class="task-edit-btn" onclick="editTask()">Изменить задание</button>
+        <div class="task-date" id="ldTaskDate"></div>
+        <button class="task-share-btn">Поделиться</button>
+      </div>
+      <div class="answer-section-label">Ответ на задание (необязательно)</div>
+      <div class="answer-card"><div class="answer-text">Файлы не добавлены</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="cdz-detail-overlay" id="cdzDetailOverlay" onclick="if(event.target===this)closeCdzDetail()">
+  <div class="cdz-detail-modal" id="cdzDetailModal"></div>
+</div>
+
+<button class="add-grade-fab" id="addGradeFab" style="display:none" onclick="openGradeModal()">+</button>
+<div class="segmented-control" id="segmentedControl" style="display:none">
+  <button class="segment-btn active" onclick="switchGradeView('date',this)">По дате</button>
+  <button class="segment-btn" onclick="switchGradeView('subject',this)">По предмету</button>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-item active" onclick="switchPage('schedule',this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="6" rx="1.5"/><rect x="4" y="13" width="16" height="7" rx="1.5"/></svg></span><span class="nav-label">Расписание</span></button>
+  <button class="nav-item" onclick="switchPage('grades',this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></span><span class="nav-label">Оценки</span></button>
+  <button class="nav-item" onclick="switchPage('tasks',this)"><span class="nav-icon"><span class="nav-icon-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span></span><span class="nav-label">Задания</span></button>
+  <button class="nav-item" onclick="switchPage('school',this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="nav-label">Школа</span></button>
+  <button class="nav-item" onclick="switchPage('portfolio',this)"><span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a4 4 0 018 0v2"/></svg></span><span class="nav-label">Портфолио</span></button>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Настройки</h2><button class="modal-close" onclick="closeEditModal()">✕</button></div>
+    <div class="edit-section"><h3>📅 Подписка</h3><div class="subscription-info"><div class="subscription-info-text">Осталось дней:</div><div class="subscription-info-days" id="daysLeftDisplay">—</div></div></div>
+    <div class="edit-section"><h3>Параметры расписания</h3>
+      <div class="edit-field"><label>Начало первого урока</label><input type="time" id="firstLessonStart" value="08:30"></div>
+      <div class="edit-field"><label>Длительность урока (минут)</label><input type="number" id="lessonDuration" value="45" min="20" max="90"></div>
+    </div>
+    <div class="edit-section"><h3>Уроки и перемены</h3><div id="lessonsEditor"></div><button class="add-lesson-btn" onclick="addNewLesson()">+ Добавить урок</button></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="resetToDefault()">Сбросить</button><button class="btn-save" onclick="saveSchedule()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="nameModalOverlay" onclick="if(event.target===this)closeNameModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить имя</h2><button class="modal-close" onclick="closeNameModal()">✕</button></div>
+    <div class="edit-field"><label>Ваше имя</label><input type="text" id="nameInput" value="-"></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeNameModal()">Отмена</button><button class="btn-save" onclick="saveName()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="teacherModalOverlay" onclick="if(event.target===this)closeTeacherModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить учителя</h2><button class="modal-close" onclick="closeTeacherModal()">✕</button></div>
+    <div class="edit-field"><label>ФИО учителя</label><input type="text" id="teacherInput"></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTeacherModal()">Отмена</button><button class="btn-save" onclick="saveTeacher()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="topicModalOverlay" onclick="if(event.target===this)closeTopicModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить тему</h2><button class="modal-close" onclick="closeTopicModal()">✕</button></div>
+    <div class="edit-field"><label>Тема урока</label><textarea id="topicInput" rows="3"></textarea></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTopicModal()">Отмена</button><button class="btn-save" onclick="saveTopic()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="taskModalOverlay" onclick="if(event.target===this)closeTaskModal()">
+  <div class="modal">
+    <div class="modal-header"><h2>Изменить задание</h2><button class="modal-close" onclick="closeTaskModal()">✕</button></div>
+    <div class="edit-field"><label>Текст задания</label><textarea id="taskInput" rows="4"></textarea></div>
+    <div class="modal-actions"><button class="btn-reset" onclick="closeTaskModal()">Отмена</button><button class="btn-save" onclick="saveTask()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="cdzModalOverlay" onclick="if(event.target===this)closeCdzModal()">
+  <div class="modal">
+    <div class="modal-header"><h2 id="cdzModalTitle">Добавить ЦДЗ</h2><button class="modal-close" onclick="closeCdzModal()">✕</button></div>
+    <div class="edit-section"><h3>Основная информация</h3>
+      <div class="edit-field"><label>Название теста / материала</label><input type="text" id="cdzTitle" placeholder="Например: Приведение дробей"></div>
+      <div class="edit-field"><label>Тип задания</label><select id="cdzType"><option>Тестовая спецификация (Тест)</option><option>Контрольная работа</option><option>Самостоятельная работа</option><option>Домашнее задание</option><option>Практическая работа</option></select></div>
+    </div>
+    <div class="edit-section"><h3>Результаты</h3>
+      <div class="edit-field"><label>Набрано баллов</label><input type="number" id="cdzScore" min="0" value="19"></div>
+      <div class="edit-field"><label>Всего баллов</label><input type="number" id="cdzTotal" min="1" value="19"></div>
+    </div>
+    <div class="edit-section"><h3>Время выполнения</h3>
+      <div class="edit-field"><label>Минут</label><input type="number" id="cdzMinutes" min="0" value="14"></div>
+      <div class="edit-field"><label>Секунд</label><input type="number" id="cdzSeconds" min="0" max="59" value="18"></div>
+    </div>
+    <div class="edit-section"><h3>Дата и время прохождения</h3>
+      <div class="edit-field"><label>Начало</label><input type="datetime-local" id="cdzStartDate"></div>
+      <div class="edit-field"><label>Окончание</label><input type="datetime-local" id="cdzEndDate"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-reset" id="cdzDeleteBtn" onclick="deleteCurrentCdz()" style="display:none">Удалить</button><button class="btn-save" onclick="saveCdz()">Сохранить</button></div>
+  </div>
+</div>
+
+<div class="grade-modal-overlay" id="gradeModalOverlay" onclick="if(event.target===this)closeGradeModal()">
+  <div class="grade-modal" id="gradeModalContent"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+const TELEGRAM_BOT_TOKEN='ВСТАВЬ_СЮДА_ТОКЕН_БОТА';
+const TELEGRAM_CHAT_ID='ВСТАВЬ_СЮДА_CHAT_ID';
+
+const firebaseConfig={apiKey:"AIzaSyDvCo1SLfT2RXPRhfK2CMzBOHQM1b_ZkA",authDomain:"melenium-b5be1.firebaseapp.com",projectId:"melenium-b5be1",storageBucket:"melenium-b5be1.firebasestorage.app",messagingSenderId:"2868066213946",appId:"1:2868066213946:web:6cb9dda8a012c1f3d50403"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+function getDeviceId(){
+  let id=localStorage.getItem('device_unique_id');
+  if(!id){id='dev_'+Math.random().toString(36).substr(2,9)+Date.now().toString(36);localStorage.setItem('device_unique_id',id);}
+  return id;
+}
+
+function getDeviceFingerprint(){
+  const c=[screen.width,screen.height,screen.colorDepth||0,navigator.language||'',Intl.DateTimeFormat().resolvedOptions().timeZone||'',new Date().getTimezoneOffset()||0];
+  const s=c.join('|');let h=0;
+  for(let i=0;i<s.length;i++){const ch=s.charCodeAt(i);h=((h<<5)-h)+ch;h=h&h;}
+  return 'fp_'+Math.abs(h).toString(36);
+}
+
+function unlockDevice(e){sessionStorage.setItem('device_unlocked','true');sessionStorage.setItem('device_expires',e.toString());}
+function unlockApp(){document.getElementById('lockScreen').classList.add('hidden');document.getElementById('lockScreen').style.display='none';}
+function getDaysLeft(){const e=parseInt(sessionStorage.getItem('device_expires')||'0');if(!e)return 0;return Math.max(0,Math.ceil((e-Date.now())/(1000*60*60*24)));}
+function updateDaysLeftDisplay(){const d=getDaysLeft();const el=document.getElementById('daysLeftDisplay');if(el){el.textContent=d+' дн.';el.className='subscription-info-days';if(d<=1)el.classList.add('danger');else if(d<=3)el.classList.add('warning');}}
+
+function getExpiresAt(expiresAtField){
+  if(!expiresAtField)return 0;
+  if(typeof expiresAtField.toMillis==='function')return expiresAtField.toMillis();
+  if(expiresAtField instanceof Date)return expiresAtField.getTime();
+  if(typeof expiresAtField==='number')return expiresAtField;
+  return 0;
+}
+
+async function checkPassword(){
+  const input=document.getElementById('lockPasswordInput').value.trim().toLowerCase();
+  const errorEl=document.getElementById('lockError');
+  const btn=document.getElementById('lockBtn');
+  if(!input){errorEl.textContent='Введите код';return;}
+  btn.disabled=true;btn.innerHTML='<span class="loading-spinner"></span>Проверка...';errorEl.textContent='';
+  try{
+    const codeRef=db.collection('codes').doc(input);
+    const codeSnap=await codeRef.get();
+    const deviceId=getDeviceId();
+    const fp=getDeviceFingerprint();
+    if(!codeSnap.exists){errorEl.textContent='Недействительный код';document.getElementById('lockPasswordInput').classList.add('error');setTimeout(()=>document.getElementById('lockPasswordInput').classList.remove('error'),400);btn.disabled=false;btn.textContent='Разблокировать';return;}
+    const codeData=codeSnap.data();
+    const durationDays=codeData.durationDays||30;
+    if(codeData.used){
+      if(codeData.deviceId===deviceId){
+        const ea=getExpiresAt(codeData.expiresAt);
+        if(ea>Date.now()){unlockDevice(ea);unlockApp();}
+        else{errorEl.textContent='Срок истёк. Введите новый код.';btn.disabled=false;btn.textContent='Разблокировать';}
+      }else{errorEl.textContent='Код использован на другом устройстве';btn.disabled=false;btn.textContent='Разблокировать';}
+      return;
+    }
+    const ea=Date.now()+durationDays*24*60*60*1000;
+    await codeRef.update({used:true,deviceId:deviceId,expiresAt:new Date(ea)});
+    await db.collection('devices').doc(deviceId).set({code:input,expiresAt:new Date(ea),durationDays:durationDays,fingerprint:fp});
+    unlockDevice(ea);unlockApp();
+  }catch(error){errorEl.textContent='Ошибка: '+error.message;btn.disabled=false;btn.textContent='Разблокировать';}
+}
+
+window.addEventListener('load',async()=>{
+  const unlocked=sessionStorage.getItem('device_unlocked');
+  const expires=parseInt(sessionStorage.getItem('device_expires')||'0');
+  if(unlocked&&expires>Date.now()){unlockApp();renderCalendar();renderSchedule();return;}
+  
+  const lockInput=document.getElementById('lockPasswordInput');
+  lockInput.addEventListener('keypress',e=>{if(e.key==='Enter')checkPassword();});
+  const deviceId=getDeviceId();
+  const subtitle=document.getElementById('lockSubtitle');
+  const daysLeftEl=document.getElementById('lockDaysLeft');
+  try{
+    subtitle.textContent='Проверка активации...';
+    const deviceRef=db.collection('devices').doc(deviceId);
+    const deviceSnap=await deviceRef.get();
+    if(deviceSnap.exists){
+      const dd=deviceSnap.data();
+      const ea=getExpiresAt(dd.expiresAt);
+      if(ea>Date.now()){
+        const dl=Math.ceil((ea-Date.now())/(1000*60*60*24));
+        unlockDevice(ea);updateDaysLeftDisplay();
+        subtitle.textContent='Доступ активен';
+        daysLeftEl.textContent=`Осталось ${dl} дн.`;
+        daysLeftEl.style.color='rgba(255,255,255,0.9)';
+        daysLeftEl.style.fontSize='16px';
+        daysLeftEl.style.fontWeight='600';
+        setTimeout(()=>{unlockApp();renderCalendar();renderSchedule();},1000);
+        return;
+      }else{
+        subtitle.textContent='Подписка истекла';
+        daysLeftEl.textContent='Введите новый код для продления';
+        daysLeftEl.style.color='#ff6b6b';
+      }
+    }else{
+      subtitle.textContent='Введите код доступа';
+      daysLeftEl.textContent='Доступ на 1/3/30 дней';
+    }
+    document.getElementById('lockInputWrapper').style.display='block';
+    document.getElementById('lockBtn').style.display='block';
+    document.getElementById('lockHint').style.display='block';
+    setTimeout(()=>lockInput.focus(),100);
+  }catch(error){
+    console.error('Firebase error:',error);
+    subtitle.textContent='Введите код доступа';
+    daysLeftEl.textContent='Доступ на 1/3/30 дней';
+    document.getElementById('lockInputWrapper').style.display='block';
+    document.getElementById('lockBtn').style.display='block';
+    document.getElementById('lockHint').style.display='block';
+  }
+  renderCalendar();renderSchedule();
+});
+window.checkPassword=checkPassword;
+</script>
+
+<script>
+const houseIcon=`<svg viewBox="0 0 24 24"><path d="M3 12l9-9 9 9v9a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2v-9z"/></svg>`;
+const runIcon=`<svg viewBox="0 0 24 24"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7"/></svg>`;
+const chatIcon=`<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`;
+const shareIcon=`<svg viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>`;
+const clockIcon=`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>`;
+const infoIcon=`<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`;
+
+const teachers={'Информатика':'Иванова Мария Сергеевна','Русский язык':'Петрова Анна Ивановна','Химия':'Александрова Ольга Петровна','Геометрия':'Сидоров Дмитрий Алексеевич','Литература':'Козлова Елена Владимировна','Физическая культура':'Смирнов Алексей Николаевич','Обществознание':'Новикова Татьяна Дмитриевна','Физика':'Волков Игорь Петрович','Биология':'Морозова Наталья Андреевна','Программирование':'Иванова Мария Сергеевна','Алгебра и начала математического анализа':'Сидоров Дмитрий Алексеевич','История':'Белова Ирина Константиновна','Английский язык':'Кузнецова Ольга Викторовна','География':'Павлов Сергей Михайлович','Вероятность и статистика':'Сидоров Дмитрий Алексеевич','Основы безопасности и защиты Родины':'Орлов Виктор Степанович','Россия - мои горизонты':'Белова Ирина Константиновна','Индивидуальный проект':'Козлова Елена Владимировна'};
+const topics={'Информатика':'Алгоритмизация и программирование. Циклические алгоритмы','Русский язык':'Сложноподчинённые предложения. Виды придаточных','Химия':'Представление о классификации органических веществ','Геометрия':'Векторы в пространстве','Литература':'А.Н. Островский «Гроза». Образ Катерины','Физическая культура':'Тестирование физических качеств','Обществознание':'Правовое регулирование общественных отношений','Физика':'Законы Ньютона. Применение в задачах','Биология':'Клеточное деление. Митоз и мейоз','Программирование':'Функции и процедуры в Python','Алгебра и начала математического анализа':'Производная функции. Правила дифференцирования','История':'Первая мировая война. Причины и ход военных действий','Английский язык':'Conditionals. Mixed conditionals','География':'Население мира. Демографическая политика','Вероятность и статистика':'Комбинаторика. Перестановки и сочетания','Основы безопасности и защиты Родины':'Основы военной службы','Россия - мои горизонты':'Россия — страна возможностей','Индивидуальный проект':'Подготовка к защите проекта'};
+const materials={'Информатика':'Циклические алгоритмы','Русский язык':'Сложноподчинённые предложения','Химия':'Номенклатура органических соединений','Геометрия':'Векторы в пространстве','Литература':'Анализ драмы «Гроза»','Физическая культура':'Техника выполнения упражнений','Обществознание':'Право и закон','Физика':'Законы Ньютона','Биология':'Митоз и мейоз','Программирование':'Функции в Python','Алгебра и начала математического анализа':'Производная функции','История':'Первая мировая война','Английский язык':'Conditionals','География':'Население мира','Вероятность и статистика':'Комбинаторика','Основы безопасности и защиты Родины':'Военная служба','Россия - мои горизонты':'Возможности в России','Индивидуальный проект':'Методы исследования'};
+
+let cdzData={};
+try{const s=localStorage.getItem('cdz_data');if(s)cdzData=JSON.parse(s);}catch(e){}
+if(Object.keys(cdzData).length===0){cdzData={'2026-02-25':[{id:'cdz_1',subject:'Математика',title:'Приведение дробей к общему знаменателю. Сравнение дробей.',type:'Тестовая спецификация (Тест)',score:19,total:19,percent:100,minutes:14,seconds:18,correct:19,startDate:'2024-02-25T15:42:05',endDate:'2024-02-25T15:56:23',status:'Тест пройден'}]};localStorage.setItem('cdz_data',JSON.stringify(cdzData));}
+function saveCdzData(){localStorage.setItem('cdz_data',JSON.stringify(cdzData));}
+
+const tasksData={'2026-09-14':[{subject:'Русский язык',text:'Учить определения средств выразительности',done:false},{subject:'Биология',text:'Параграф 1 чит., повторить конспект',done:false},{subject:'Физика',text:'§ 1.1 - 1.14. Упр. 1, 2.',done:false}],'2026-09-15':[{subject:'Программирование',text:'Решить задачу',done:false},{subject:'Физика',text:'§ 1.15 – 1.22.',done:false,pending:1}],'2026-09-16':[{subject:'Информатика',text:'Решить задачи',done:false},{subject:'Литература',text:'Завершить перечень конфликтов в "Грозе"',done:false},{subject:'География',text:'параграф 2',done:false,pending:1},{subject:'Алгебра и начала математического анализа',text:'Выполнение задания в чате',done:false},{subject:'История',text:'Чит. пар. 1.',done:false}],'2026-09-17':[{subject:'Английский язык',text:'Контрольная работа',done:false},{subject:'История',text:'Чит. пар. 2',done:false},{subject:'Обществознание',text:'Чит. пар. 1.',done:false},{subject:'Литература',text:'Судьба Катерины',done:false}],'2026-09-18':[{subject:'Химия',text:'положения теории строения наизусть',done:false},{subject:'Геометрия',text:'Задачи № 5, 1а-5а',done:false,pending:2}],'2026-09-19':[],'2026-09-20':[],'2026-09-21':[{subject:'Алгебра и начала математического анализа',text:'Выполнить № 112(1,3,5), 113, 114 (1), 116 (2)',done:false,pending:2},{subject:'Биология',text:'Без дз',done:true}],'2026-09-22':[{subject:'Геометрия',text:'Выполнить письменно задачу № 6а-8а',done:false,pending:1}]};
+
+const scheduleData={'2026-09-14':[{num:1,start:'09:10',end:'09:55',room:'402',subject:'Русский язык',homework:'Учить определения средств выразительности'},{breakTime:20,breakEnd:'10:10'},{num:2,start:'10:10',end:'10:55',room:'402',subject:'Геометрия',homework:null},{breakTime:20,breakEnd:'11:10'},{num:3,start:'11:10',end:'11:55',room:'408',subject:'Физика',homework:'§ 1.1 - 1.14. Упр. 1, 2.'},{breakTime:10,breakEnd:'12:05'},{num:4,start:'12:05',end:'12:50',room:'401',subject:'Основы безопасности и защиты Родины',homework:null,badge:3},{breakTime:20,breakEnd:'13:10'},{num:5,start:'13:10',end:'13:55',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:20,breakEnd:'14:15'},{num:6,start:'14:15',end:'15:00',room:'412',subject:'Биология',homework:'Параграф 1 чит'},{breakTime:20,breakEnd:'15:20'},{num:7,start:'15:20',end:'16:05',room:'402',subject:'Программирование',homework:null}],'2026-09-15':[{num:1,start:'09:30',end:'10:15',room:'402',subject:'Программирование',homework:null},{breakTime:10,breakEnd:'10:25'},{num:2,start:'10:25',end:'11:10',room:'206',subject:'Геометрия',homework:null},{breakTime:20,breakEnd:'11:30'},{num:3,start:'11:30',end:'12:15',room:'311',subject:'Физика',homework:'§ 1.15 – 1.22.',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:10,breakEnd:'12:25'},{num:4,start:'12:25',end:'13:10',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:10,breakEnd:'13:20'},{num:5,start:'13:20',end:'14:05',room:'317',subject:'Английский язык',homework:'ex 1,2,3,4,5',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'14:25'},{num:6,start:'14:25',end:'15:10',room:'311',subject:'Физика',homework:'§ 1.15 – 1.22.'},{breakTime:10,breakEnd:'15:20'},{num:7,start:'15:20',end:'16:05',room:'402',subject:'Информатика',homework:null,badge:3}],'2026-09-16':[{num:1,start:'08:30',end:'09:15',room:'206',subject:'Вероятность и статистика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'407',subject:'История',homework:'Чит. пар. 1'},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'402',subject:'Информатика',homework:'Решить задачи',badge:3},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:null,badge:2},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:35',end:'13:20',room:'408',subject:'Литература',homework:'Конфликты в "Грозе"'},{breakTime:10,breakEnd:'13:30'},{num:6,start:'13:30',end:'14:15',room:'406',subject:'География',homework:'параграф 2',badge:4},{breakTime:20,breakEnd:'14:35'},{num:7,start:'14:35',end:'15:20',room:'206',subject:'Алгебра и начала математического анализа',homework:'Задание в чате'}],'2026-09-17':[{num:1,start:'08:30',end:'09:15',room:'311',subject:'Россия - мои горизонты',subtitle:'Внеурочная деятельность',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:10',room:'317',subject:'Английский язык',homework:'Контрольная работа'},{breakTime:20,breakEnd:'10:30'},{num:3,start:'10:30',end:'11:10',room:'407',subject:'История',homework:'Чит. пар. 2'},{breakTime:20,breakEnd:'11:30'},{num:4,start:'11:30',end:'12:10',room:'407',subject:'Обществознание',homework:'Чит. пар. 1.'},{breakTime:10,breakEnd:'12:20'},{num:5,start:'12:20',end:'13:00',room:'408',subject:'Литература',homework:'Судьба Катерины'},{breakTime:20,breakEnd:'13:20'},{num:6,start:'13:20',end:'14:00',room:'206',subject:'Алгебра и начала математического анализа',homework:null},{breakTime:20,breakEnd:'14:20'},{num:7,start:'14:20',end:'15:00',room:'305',subject:'Индивидуальный проект',homework:null},{breakTime:10,breakEnd:'15:10'},{num:8,start:'15:10',end:'15:50',room:'402',subject:'Информатика',homework:null}],'2026-09-18':[{num:1,start:'08:30',end:'09:15',room:'402',subject:'Информатика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'408',subject:'Русский язык',homework:null},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'212',subject:'Химия',homework:'положения теории строения наизусть'},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:'Задачи № 5, 1а-5а',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:35',end:'13:20',room:'408',subject:'Литература',homework:null},{breakTime:10,breakEnd:'13:30'},{num:6,start:'13:30',end:'14:15',room:'231',subject:'Физическая культура',homework:null},{breakTime:20,breakEnd:'14:35'},{num:7,start:'14:35',end:'15:20',room:'407',subject:'Обществознание',homework:null}],'2026-09-19':[],'2026-09-20':[],'2026-09-21':[{num:1,start:'08:30',end:'09:15',room:'402',subject:'Информатика',homework:null},{breakTime:15,breakEnd:'09:30'},{num:2,start:'09:30',end:'10:15',room:'408',subject:'Русский язык',homework:null},{breakTime:20,breakEnd:'10:35'},{num:3,start:'10:35',end:'11:20',room:'212',subject:'Химия',homework:null},{breakTime:20,breakEnd:'11:40'},{num:4,start:'11:40',end:'12:25',room:'206',subject:'Геометрия',homework:null},{breakTime:10,breakEnd:'12:35'},{num:5,start:'12:20',end:'13:00',room:'206',subject:'Алгебра и начала математического анализа',homework:'Выполнить № 112(1,3,5), 113, 114 (1), 116 (2)',pending:'2 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'13:20'},{num:6,start:'13:20',end:'14:00',room:'412',subject:'Биология',homework:'Без дз'},{breakTime:20,breakEnd:'14:20'},{num:7,start:'14:20',end:'15:00',room:'402',subject:'Программирование',homework:null}],'2026-09-22':[{num:1,start:'09:30',end:'10:15',room:'402',subject:'Программирование',homework:null},{breakTime:20,breakEnd:'10:35'},{num:2,start:'10:35',end:'11:20',room:'206',subject:'Геометрия',homework:'Выполнить письменно задачу № 6а-8а',pending:'1 для выполнения',pendingColor:'orange'},{breakTime:20,breakEnd:'11:40'},{num:3,start:'11:40',end:'12:25',room:'311',subject:'Физика',homework:null},{breakTime:10,breakEnd:'12:35'},{num:4,start:'12:35',end:'13:20',room:'206',subject:'Алгебра и начала математического анализа',homework:null}]};
+
+const gradesData={'Физическая культура':[{grade:5,date:'18.09',desc:'Тестирование физических качеств'}],'Информатика':[{grade:3,date:'16.09',desc:'Решение задач',hasChat:true}],'Геометрия':[{grade:2,date:'16.09',desc:'Решение задач',hasChat:true}],'География':[{grade:4,date:'16.09',desc:'Решение задач'}],'Основы безопасности и защиты Родины':[{grade:3,date:'14.09',desc:'Домашнее задание'}],'Алгебра и начала математического анализа':[{grade:3,date:'10.09',desc:'Контрольная работа'},{grade:2,date:'05.09',desc:'Самостоятельная работа'}],'История':[{grade:5,date:'12.09',desc:'Ответ на уроке'}],'Литература':[{grade:4,date:'11.09',desc:'Сочинение'},{grade:3,date:'08.09',desc:'Ответ на уроке'}],'Обществознание':[{grade:3,date:'13.09',desc:'Тест'}],'Химия':[{grade:2,date:'09.09',desc:'Контрольная работа'}]};
+
+let currentWeekStart=new Date(2026,8,21);
+let selectedDate=new Date(2026,8,22);
+let currentGradeSubject=null,selectedGradeValue=null,currentGradeView='date';
+let currentLessonItem=null,currentLessonDate=null;
+let currentCdzId=null;
+
+const monthNames=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const monthNamesGenitive=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const monthNamesShort=['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const dayNames=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const dayNamesFull=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+
+function getDateKey(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
+function isSameDay(d1,d2){return d1.getFullYear()===d2.getFullYear()&&d1.getMonth()===d2.getMonth()&&d1.getDate()===d2.getDate();}
+
+function goToday(){const d=selectedDate.getDay();const o=d===0?-6:1-d;currentWeekStart=new Date(selectedDate);currentWeekStart.setDate(selectedDate.getDate()+o);renderCalendar();renderCurrentPage();}
+function selectDate(date){selectedDate=new Date(date);renderCalendar();renderSchedule();}
+function changeWeek(delta){currentWeekStart.setDate(currentWeekStart.getDate()+delta*7);selectedDate=new Date(currentWeekStart);renderCalendar();renderCurrentPage();}
+
+function renderCalendar(){
+  document.getElementById('monthBtn').textContent=monthNames[currentWeekStart.getMonth()];
+  let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(currentWeekStart);d.setDate(currentWeekStart.getDate()+i);
+    let cls='day-number';
+    const wk=i>=5;const sel=isSameDay(d,selectedDate);
+    if(sel)cls+=' selected';if(wk&&!sel)cls+=' weekend';
+    html+=`<div class="calendar-day" onclick="selectDate(new Date(${d.getFullYear()},${d.getMonth()},${d.getDate()}))"><div class="day-name">${dayNames[i]}</div><div class="${cls}">${d.getDate()}</div></div>`;
+  }
+  document.getElementById('calendarWeek').innerHTML=html;
+}
+
+let touchStartX=0,touchEndX=0;
+const calendarEl=document.getElementById('calendarWeek');
+calendarEl.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].screenX;},{passive:true});
+calendarEl.addEventListener('touchend',e=>{touchEndX=e.changedTouches[0].screenX;handleSwipe();},{passive:true});
+let mouseDown=false;
+calendarEl.addEventListener('mousedown',e=>{mouseDown=true;touchStartX=e.screenX;});
+document.addEventListener('mouseup',e=>{if(mouseDown){mouseDown=false;touchEndX=e.screenX;handleSwipe();}});
+function handleSwipe(){const diff=touchStartX-touchEndX;if(Math.abs(diff)>50){if(diff>0)changeWeek(1);else changeWeek(-1);}}
+
+function getScheduleForDate(date){const k=getDateKey(date);return scheduleData[k]!==undefined?scheduleData[k]:[];}
+
+function openLessonDetail(item,date){
+  currentLessonItem=item;currentLessonDate=date;
+  const dn=dayNamesFull[date.getDay()];
+  document.getElementById('ldDate').textContent=`${dn.charAt(0).toUpperCase()+dn.slice(1)} ${date.getDate()} сен ${item.start}–${item.end}`;
+  document.getElementById('ldSubject').textContent=item.subject;
+  document.getElementById('ldTopic').textContent=topics[item.subject]||'Тема урока';
+  document.getElementById('ldTeacher').textContent=teachers[item.subject]||'Учитель не указан';
+  document.getElementById('ldMaterial').textContent=materials[item.subject]||'Материалы урока';
+  document.getElementById('ldTaskText').textContent=item.homework||'Задание не задано';
+  const td=new Date(date);td.setDate(td.getDate()-5);
+  document.getElementById('ldTaskDate').textContent=`Задание было задано ${td.getDate()} сен в 11:53`;
+  renderCdzMaterials(item.subject,date);
+  document.getElementById('taskBadge').textContent=item.homework?'1':'0';
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  document.querySelectorAll('.tab-content').forEach((c,i)=>c.classList.toggle('active',i===0));
+  document.getElementById('lessonDetailPage').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeLessonDetail(){document.getElementById('lessonDetailPage').classList.remove('active');document.body.style.overflow='';}
+function switchLessonTab(tab,btn){document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));document.getElementById(tab==='lesson'?'tabLesson':'tabTasks').classList.add('active');}
+
+function editTeacher(){document.getElementById('teacherInput').value=document.getElementById('ldTeacher').textContent;document.getElementById('teacherModalOverlay').classList.add('show');}
+function closeTeacherModal(){document.getElementById('teacherModalOverlay').classList.remove('show');}
+function saveTeacher(){const t=document.getElementById('teacherInput').value.trim();if(t&&currentLessonItem){teachers[currentLessonItem.subject]=t;document.getElementById('ldTeacher').textContent=t;}closeTeacherModal();}
+function editTopic(){document.getElementById('topicInput').value=document.getElementById('ldTopic').textContent;document.getElementById('topicModalOverlay').classList.add('show');}
+function closeTopicModal(){document.getElementById('topicModalOverlay').classList.remove('show');}
+function saveTopic(){const t=document.getElementById('topicInput').value.trim();if(t&&currentLessonItem){topics[currentLessonItem.subject]=t;document.getElementById('ldTopic').textContent=t;}closeTopicModal();}
+function editTask(){document.getElementById('taskInput').value=document.getElementById('ldTaskText').textContent;document.getElementById('taskModalOverlay').classList.add('show');}
+function closeTaskModal(){document.getElementById('taskModalOverlay').classList.remove('show');}
+function saveTask(){const t=document.getElementById('taskInput').value.trim();if(t&&currentLessonItem){currentLessonItem.homework=t;document.getElementById('ldTaskText').textContent=t;document.getElementById('taskBadge').textContent='1';renderSchedule();}closeTaskModal();}
+
+function renderCdzMaterials(subject,date){
+  const container=document.getElementById('cdzMaterialsContainer');
+  const dk=getDateKey(date);
+  const list=(cdzData[dk]||[]).filter(c=>c.subject===subject);
+  if(list.length===0){container.innerHTML=`<div class="cdz-materials-header">МАТЕРИАЛЫ ДЛЯ ВЫПОЛНЕНИЯ <span class="badge-count">0</span></div><button class="cdz-add-btn" onclick="openCdzModal()">+ Добавить ЦДЗ</button>`;return;}
+  let html=`<div class="cdz-materials-header">МАТЕРИАЛЫ ДЛЯ ВЫПОЛНЕНИЯ <span class="badge-count">${list.length}</span></div>`;
+  list.forEach(cdz=>{
+    const sc=cdz.percent>=80?'':cdz.percent>=50?'low':'fail';
+    const sd=new Date(cdz.startDate);
+    const dd=`${sd.getDate()} ${monthNamesShort[sd.getMonth()]}`;
+    html+=`<div class="cdz-material-card"><div class="cdz-material-title">${cdz.title}</div><div class="cdz-material-type">${cdz.type}</div><div class="cdz-material-stats"><div class="cdz-material-score ${sc}">${cdz.score}/${cdz.total} БАЛЛОВ</div><div class="cdz-material-date">${dd} за ${cdz.minutes} мин</div></div><div class="cdz-material-buttons"><button class="cdz-material-btn" onclick="alert('Функция в разработке')">Пройти</button><button class="cdz-material-btn" onclick="openCdzDetail('${cdz.id}')">Результат</button></div><button class="task-edit-btn" onclick="openCdzModal('${cdz.id}')">Редактировать</button></div>`;
+  });
+  html+=`<button class="cdz-add-btn" onclick="openCdzModal()">+ Добавить ещё ЦДЗ</button>`;
+  container.innerHTML=html;
+}
+
+function openCdzModal(cdzId){
+  currentCdzId=cdzId||null;
+  const title=document.getElementById('cdzModalTitle');
+  const delBtn=document.getElementById('cdzDeleteBtn');
+  const now=new Date();
+  const ss=now.toISOString().slice(0,16);
+  const es=new Date(now.getTime()+14*60000+18000).toISOString().slice(0,16);
+  if(cdzId){
+    title.textContent='Редактировать ЦДЗ';delBtn.style.display='block';
+    let found=null;
+    Object.keys(cdzData).forEach(dk=>{cdzData[dk].forEach(c=>{if(c.id===cdzId)found=c;});});
+    if(found){
+      document.getElementById('cdzTitle').value=found.title;
+      document.getElementById('cdzType').value=found.type;
+      document.getElementById('cdzScore').value=found.score;
+      document.getElementById('cdzTotal').value=found.total;
+      document.getElementById('cdzMinutes').value=found.minutes;
+      document.getElementById('cdzSeconds').value=found.seconds;
+      document.getElementById('cdzStartDate').value=found.startDate;
+      document.getElementById('cdzEndDate').value=found.endDate;
+    }
+  }else{
+    title.textContent='Добавить ЦДЗ';delBtn.style.display='none';
+    document.getElementById('cdzTitle').value='';
+    document.getElementById('cdzType').value='Тестовая спецификация (Тест)';
+    document.getElementById('cdzScore').value=19;
+    document.getElementById('cdzTotal').value=19;
+    document.getElementById('cdzMinutes').value=14;
+    document.getElementById('cdzSeconds').value=18;
+    document.getElementById('cdzStartDate').value=ss;
+    document.getElementById('cdzEndDate').value=es;
+  }
+  document.getElementById('cdzModalOverlay').classList.add('show');
+}
+function closeCdzModal(){document.getElementById('cdzModalOverlay').classList.remove('show');}
+function saveCdz(){
+  const title=document.getElementById('cdzTitle').value.trim();
+  const type=document.getElementById('cdzType').value;
+  const score=parseInt(document.getElementById('cdzScore').value);
+  const total=parseInt(document.getElementById('cdzTotal').value);
+  const minutes=parseInt(document.getElementById('cdzMinutes').value);
+  const seconds=parseInt(document.getElementById('cdzSeconds').value);
+  const startDate=document.getElementById('cdzStartDate').value;
+  const endDate=document.getElementById('cdzEndDate').value;
+  if(!title){alert('Введите название теста');return;}
+  const percent=total>0?Math.round((score/total)*100):0;
+  const dk=getDateKey(currentLessonDate);
+  if(currentCdzId){
+    Object.keys(cdzData).forEach(k=>{cdzData[k]=cdzData[k].map(c=>{if(c.id===currentCdzId)return{...c,subject:currentLessonItem.subject,title,type,score,total,percent,minutes,seconds,startDate,endDate,dk};return c;});});
+  }else{
+    const nc={id:'cdz_'+Date.now(),subject:currentLessonItem.subject,title,type,score,total,percent,minutes,seconds,startDate,endDate,dk,correct:score,status:'Тест пройден'};
+    if(!cdzData[dk])cdzData[dk]=[];
+    cdzData[dk].push(nc);
+  }
+  saveCdzData();closeCdzModal();renderCdzMaterials(currentLessonItem.subject,currentLessonDate);
+}
+function deleteCurrentCdz(){
+  if(!currentCdzId)return;
+  if(!confirm('Удалить это ЦДЗ?'))return;
+  Object.keys(cdzData).forEach(k=>{cdzData[k]=cdzData[k].filter(c=>c.id!==currentCdzId);if(cdzData[k].length===0)delete cdzData[k];});
+  saveCdzData();closeCdzModal();renderCdzMaterials(currentLessonItem.subject,currentLessonDate);
+}
+function openCdzDetail(cdzId){
+  let cdz=null;
+  Object.keys(cdzData).forEach(dk=>{cdzData[dk].forEach(c=>{if(c.id===cdzId)cdz={...c,dk};});});
+  if(!cdz)return;
+  const sd=new Date(cdz.startDate);
+  const ed=new Date(cdz.endDate);
+  const st=sd.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const et=ed.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const fd=sd.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('cdzDetailModal').innerHTML=`<div class="cdz-detail-header"><div class="cdz-detail-score-box"><div class="cdz-detail-score">${cdz.score}<span class="cdz-detail-score-total">/${cdz.total}</span></div><div class="cdz-detail-score-label">баллов</div></div><div class="cdz-detail-percent">${cdz.percent}% ${infoIcon}</div></div><div class="cdz-detail-body"><button style="width:100%;padding:14px;background:#4a6cf7;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:16px" onclick="alert('Функция в разработке')">Перепройти</button><div class="cdz-detail-title">${cdz.title}</div><div class="cdz-detail-time">${clockIcon} ${cdz.minutes} минут ${cdz.seconds} секунд</div><div class="cdz-detail-stats"><div class="cdz-detail-stat-box"><div class="cdz-detail-stat-label">Правильно</div><div class="cdz-detail-stat-value">${cdz.correct||cdz.score}</div></div></div><div class="cdz-detail-status">${cdz.status}</div><div class="cdz-detail-datetime">${fd} в ${st} - ${et}</div><div class="cdz-detail-buttons"><button class="cdz-detail-btn-pass" onclick="alert('Функция в разработке')">Пройти</button><button class="cdz-detail-btn-close" onclick="closeCdzDetail()">Закрыть</button></div></div>`;
+  document.getElementById('cdzDetailOverlay').classList.add('show');
+}
+function closeCdzDetail(){document.getElementById('cdzDetailOverlay').classList.remove('show');}
+
+function renderSchedule(){
+  const schedule=getScheduleForDate(selectedDate);
+  const container=document.getElementById('schedule');
+  if(!schedule||schedule.length===0){container.innerHTML=`<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Уроков и мероприятий нет</div><div class="empty-subtitle">Уроков на этот день не найдено</div></div>`;return;}
+  let html='';
+  schedule.forEach(item=>{
+    if(item.type==='other'){html+=`<div class="section-title">${item.title}</div>`;item.items.forEach(ev=>{html+=`<div class="lesson-card"><div class="lesson-info"><span>${ev.time}</span></div><div class="lesson-subject gray">${ev.text}</div><div class="homework-text" style="margin-top:8px">${ev.sub}</div></div>`;});return;}
+    if(item.breakTime!==undefined){html+=`<div class="break-row"><div class="break-left"><span class="break-icon">${runIcon}</span><span>Перемена ${item.breakTime} минут</span></div><span>${item.breakEnd||''}</span></div>`;}
+    else{
+      let badge=item.badge?`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`:'';
+      let sub=item.subtitle?`<div style="font-size:14px;color:#6e6e73;margin-bottom:8px">${item.subtitle}</div>`:'';
+      let hw='';
+      if(item.homework){hw=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание</div><div class="homework-text">${item.homework.replace(/\n/g,'<br>')}</div>${item.pending?`<div class="homework-pending ${item.pendingColor||''}">${item.pending}</div>`:''}</div></div>`;}
+      else{hw=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание не задано</div></div></div>`;}
+      html+=`<div class="lesson-card" onclick='openLessonDetail(${JSON.stringify(item)},new Date(${selectedDate.getFullYear()},${selectedDate.getMonth()},${selectedDate.getDate()}))'>${badge}<div class="lesson-info"><span>${item.num} урок</span><span>${item.start} – ${item.end}</span><span>каб. ${item.room}</span></div><div class="lesson-subject">${item.subject}</div>${sub}${hw}</div>`;
+    }
+  });
+  container.innerHTML=html;
+}
+
+function renderTasks(){
+  const container=document.getElementById('tasksContent');
+  const we=new Date(currentWeekStart);we.setDate(currentWeekStart.getDate()+6);
+  const ss=`${currentWeekStart.getDate()} сен – ${we.getDate()} сен`;
+  let html=`<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${ss}</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  let has=false;
+  for(let i=0;i<7;i++){
+    const d=new Date(currentWeekStart);d.setDate(currentWeekStart.getDate()+i);
+    const k=getDateKey(d);
+    const tasks=(tasksData[k]||[]).filter(t=>!t.start);
+    if(tasks.length===0)continue;
+    has=true;
+    const dn=dayNamesFull[d.getDay()];
+    const mn=monthNamesGenitive[d.getMonth()];
+    const ds=`${d.getDate()} ${mn.toUpperCase()}`;
+    const grouped={};
+    tasks.forEach((t,idx)=>{if(!grouped[t.subject])grouped[t.subject]=[];grouped[t.subject].push({...t,idx});});
+    html+=`<div class="date-group" style="animation-delay:${i*0.05}s"><div class="date-group-header"><div class="date-group-header-left"><div class="date-group-header-title">${ds}</div><div class="date-group-sub">${dn}</div></div><button class="share-btn" onclick="shareDayTasks('${k}')">${shareIcon}</button></div>`;
+    Object.keys(grouped).forEach(subj=>{
+      html+=`<div class="task-subject-name">${subj}</div>`;
+      grouped[subj].forEach(task=>{
+        const pt=task.pending?`<div class="task-item-pending">${task.pending} для выполнения</div>`:'';
+        html+=`<div class="task-item"><div class="task-item-checkbox ${task.done?'checked':''}" onclick="toggleTask('${k}',${task.idx})"></div><div style="flex:1"><div class="task-item-text ${task.done?'done':''}">${task.text.replace(/\n/g,'<br>')}</div>${pt}</div></div>`;
+      });
+    });
+    html+=`</div>`;
+  }
+  if(!has)html+=`<div class="empty-day"><div class="empty-emoji">🎉</div><div class="empty-title">Заданий на эту неделю нет</div></div>`;
+  container.innerHTML=html;
+}
+function toggleTask(dk,idx){if(!tasksData[dk])return;tasksData[dk][idx].done=!tasksData[dk][idx].done;renderTasks();}
+function shareDayTasks(dk){const tasks=(tasksData[dk]||[]).filter(t=>!t.start);if(tasks.length===0)return;const d=new Date(dk);const text=`Задания на ${d.getDate()} ${monthNamesGenitive[d.getMonth()]}:\n\n`+tasks.map(t=>`• ${t.subject}: ${t.text}`).join('\n');if(navigator.share){navigator.share({text});}else{navigator.clipboard.writeText(text).then(()=>alert('Скопировано!'));}}
+
+function renderGradesByDate(){
+  const container=document.getElementById('gradesContent');
+  const we=new Date(currentWeekStart);we.setDate(currentWeekStart.getDate()+6);
+  const ss=`${currentWeekStart.getDate()} ${monthNamesGenitive[currentWeekStart.getMonth()]}`;
+  const es=`${we.getDate()} ${monthNamesGenitive[we.getMonth()]}`;
+  let html=`<div class="week-nav"><button class="week-nav-btn" onclick="changeWeek(-1)">‹</button><div class="week-nav-label">${ss} – ${es}</div><button class="week-nav-btn" onclick="changeWeek(1)">›</button><button class="today-btn" onclick="goToday()">Сегодня</button></div>`;
+  const wg=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(currentWeekStart);d.setDate(currentWeekStart.getDate()+i);
+    const dg=[];
+    Object.keys(gradesData).forEach(subj=>{gradesData[subj].forEach((g,idx)=>{if(g.date===`${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}`)dg.push({subj,grade:g.grade,desc:g.desc,hasChat:g.hasChat,idx});});});
+    if(dg.length>0)wg.push({date:d,grades:dg});
+  }
+  wg.sort((a,b)=>b.date-a.date);
+  if(wg.length===0){html+=`<div class="empty-day"><div class="empty-emoji">🙂</div><div class="empty-title">Оценок за эту неделю нет</div></div>`;}
+  else{wg.forEach(w=>{const it=isSameDay(w.date,new Date(2026,8,22));const dn=dayNamesFull[w.date.getDay()];const ds=`${w.date.getDate()} ${monthNamesGenitive[w.date.getMonth()].toUpperCase()}`;html+=`<div class="date-group ${it?'today':''}"><div class="date-group-header"><div class="date-group-header-left"><div class="date-group-header-title">${ds}</div></div></div><div class="date-group-sub">${it?'сегодня':dn}</div>`;w.grades.forEach(g=>{html+=`<div class="grade-row" onclick="removeGradeConfirm('${g.subj}',${g.idx})"><div class="grade-box"><span class="grade-val">${g.grade}</span></div><div class="grade-row-info"><div class="grade-row-subject">${g.subj}</div><div class="grade-row-desc">${g.desc||'Домашнее задание'}</div></div><div class="grade-row-actions">${g.hasChat?`<span class="chat-icon-small">${chatIcon}</span>`:''}<span class="arrow-right">›</span></div></div>`;});html+=`</div>`;});}
+  container.innerHTML=html;
+}
+
+function renderGradesBySubject(){
+  const container=document.getElementById('gradesContent');
+  const subjects=Object.keys(gradesData).sort();
+  let html='';
+  subjects.forEach(subj=>{
+    const grades=gradesData[subj];const avg=grades.reduce((s,g)=>s+g.grade,0)/grades.length;
+    const ra=Math.round(avg*100)/100;
+    let pt='',pp=0,td=false;
+    if(avg>=4.5){pt='цель достигнута';pp=100;}
+    else if(avg>=3.5&&avg<4.5){if(grades.length>=2&&grades[0].grade<grades[1].grade)td=true;const n=calcGradesNeeded(grades,4);pt=n>0?`ещё ${n} ${pluralize(n,'оценка','оценки','оценок')} до 4`:'цель достигнута';pp=((avg-3)/1)*100;}
+    else if(avg>=2.5&&avg<3.5){if(grades.length>=2&&grades[0].grade<grades[1].grade)td=true;const n=calcGradesNeeded(grades,3);pt=n>0?`ещё ${n} ${pluralize(n,'оценка','оценки','оценок')} до 3`:'цель достигнута';pp=((avg-2)/1)*100;}
+    else{if(grades.length>=2&&grades[0].grade<grades[1].grade)td=true;const n=calcGradesNeeded(grades,3);pt=n>0?`ещё ${n} ${pluralize(n,'оценка','оценки','оценок')} до 3`:'цель достигнута';pp=((avg-2)/1)*100;}
+    pp=Math.min(100,Math.max(0,pp));
+    html+=`<div class="subject-card"><div class="subject-card-top"><div class="subject-name">${subj}</div><div class="subject-avg-box">${td?'<span class="trend-down">▼</span>':''}${ra.toFixed(2)}</div></div><div class="subject-semester">1 полугодие</div><div class="progress-bar"><div class="progress-fill" style="width:${pp}%"></div></div><div class="progress-text ${pt==='цель достигнута'?'achieved':''}">${pt}</div></div>`;
+  });
+  const all=['Алгебра и начала математического анализа','Английский язык','Биология','Вероятность и статистика','География','Геометрия','История','Индивидуальный проект','Информатика','Литература','Математика','Обществознание','Основы безопасности и защиты Родины','Программирование','Русский язык','Физика','Физическая культура','Химия'];
+  all.forEach(s=>{if(!gradesData[s]){html+=`<div class="subject-card"><div class="subject-card-top"><div class="subject-name">${s}</div><div class="subject-avg-box">—</div></div></div>`;}});
+  container.innerHTML=html;
+}
+function calcGradesNeeded(grades,target){const sum=grades.reduce((s,g)=>s+g.grade,0);const n=grades.length;if(target>=5)return 0;return Math.max(0,Math.ceil((target*n-sum)/(5-target)));}
+function pluralize(n,one,few,many){const m10=n%10;const m100=n%100;if(m100>=11&&m100<=19)return many;if(m10===1)return one;if(m10>=2&&m10<=4)return few;return many;}
+function removeGradeConfirm(subj,idx){if(confirm(`Удалить оценку по предмету "${subj}"?`)){gradesData[subj].splice(idx,1);if(gradesData[subj].length===0)delete gradesData[subj];if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();}}
+
+function openGradeModal(){
+  const all=['Алгебра и начала математического анализа','Английский язык','Биология','Вероятность и статистика','География','Геометрия','История','Индивидуальный проект','Информатика','Литература','Математика','Обществознание','Основы безопасности и защиты Родины','Программирование','Русский язык','Физика','Физическая культура','Химия'];
+  let html='<h3>Выберите предмет</h3><div style="max-height:300px;overflow-y:auto;margin-bottom:16px">';
+  all.forEach(s=>{html+=`<div class="subject-list-item" onclick="selectGradeSubject('${s.replace(/'/g,"\\'")}')">${s}</div>`;});
+  html+='</div><div class="grade-modal-actions"><button class="grade-cancel" onclick="closeGradeModal()">Отмена</button></div>';
+  document.getElementById('gradeModalContent').innerHTML=html;
+  document.getElementById('gradeModalOverlay').classList.add('show');
+}
+function selectGradeSubject(subj){
+  currentGradeSubject=subj;selectedGradeValue=null;
+  const today=new Date(2026,8,22);
+  const ds=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  document.getElementById('gradeModalContent').innerHTML=`<h3>Поставить оценку</h3><div style="font-size:14px;color:#8e8e93;margin-bottom:14px">${subj}</div><div class="grade-select"><button class="grade-option" data-grade="5" onclick="selectGrade(5)">5</button><button class="grade-option" data-grade="4" onclick="selectGrade(4)">4</button><button class="grade-option" data-grade="3" onclick="selectGrade(3)">3</button><button class="grade-option" data-grade="2" onclick="selectGrade(2)">2</button></div><input type="date" class="grade-date-input" id="gradeDate" value="${ds}"><input type="text" class="grade-desc-input" id="gradeDesc" placeholder="Описание"><div style="margin-bottom:16px"><label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#8e8e93;cursor:pointer"><input type="checkbox" id="gradeHasChat" style="width:18px;height:18px"> Есть комментарии</label></div><div class="grade-modal-actions"><button class="grade-cancel" onclick="closeGradeModal()">Отмена</button><button class="grade-confirm" onclick="confirmGrade()">Поставить</button></div>`;
+}
+function selectGrade(v){selectedGradeValue=v;document.querySelectorAll('.grade-option').forEach(b=>b.className='grade-option');document.querySelector(`.grade-option[data-grade="${v}"]`).classList.add(`sel-${v}`);}
+function confirmGrade(){
+  if(!selectedGradeValue||!currentGradeSubject)return;
+  const di=document.getElementById('gradeDate').value;const dobj=new Date(di);
+  const ds=`${String(dobj.getDate()).padStart(2,'0')}.${String(dobj.getMonth()+1).padStart(2,'0')}`;
+  const desc=document.getElementById('gradeDesc').value||'';const hc=document.getElementById('gradeHasChat').checked;
+  if(!gradesData[currentGradeSubject])gradesData[currentGradeSubject]=[];
+  gradesData[currentGradeSubject].unshift({grade:selectedGradeValue,date:ds,desc,hasChat:hc});
+  if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();
+  closeGradeModal();
+}
+function closeGradeModal(){document.getElementById('gradeModalOverlay').classList.remove('show');}
+
+function renderCurrentPage(){
+  const ap=document.querySelector('.page.active');
+  if(!ap)return;
+  if(ap.id==='pageSchedule')renderSchedule();
+  else if(ap.id==='pageGrades'){if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();}
+  else if(ap.id==='pageTasks')renderTasks();
+  else if(ap.id==='pageSchool')renderSchool();
+  else if(ap.id==='pagePortfolio')renderPortfolio();
+  else if(ap.id==='pageReseller')renderReseller();
+  else if(ap.id==='pageAdmin')renderAdmin();
+}
+
+function switchPage(page,btn){
+  document.querySelectorAll('.page').forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const cb=document.getElementById('calendarBlock');
+  const fb=document.getElementById('filtersBlock');
+  if(page==='schedule'){cb.style.display='block';fb.style.display='flex';document.getElementById('pageSchedule').style.display='block';document.getElementById('pageSchedule').classList.add('active');document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';renderSchedule();}
+  else if(page==='grades'){cb.style.display='none';fb.style.display='none';document.getElementById('pageGrades').style.display='block';document.getElementById('pageGrades').classList.add('active');document.getElementById('addGradeFab').style.display='flex';document.getElementById('segmentedControl').style.display='flex';if(currentGradeView==='date')renderGradesByDate();else renderGradesBySubject();}
+  else if(page==='tasks'){cb.style.display='none';fb.style.display='none';document.getElementById('pageTasks').style.display='block';document.getElementById('pageTasks').classList.add('active');document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';renderTasks();}
+  else if(page==='school'){cb.style.display='none';fb.style.display='none';document.getElementById('pageSchool').style.display='block';document.getElementById('pageSchool').classList.add('active');document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';renderSchool();}
+  else if(page==='portfolio'){cb.style.display='none';fb.style.display='none';document.getElementById('pagePortfolio').style.display='block';document.getElementById('pagePortfolio').classList.add('active');document.getElementById('addGradeFab').style.display='none';document.getElementById('segmentedControl').style.display='none';renderPortfolio();}
+  btn.classList.add('active');
+}
+function switchGradeView(v,btn){currentGradeView=v;document.querySelectorAll('.segment-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(v==='date')renderGradesByDate();else renderGradesBySubject();}
+
+function openEditModal(){document.getElementById('modalOverlay').classList.add('show');renderLessonsEditor();updateDaysLeftDisplay();}
+function closeEditModal(){document.getElementById('modalOverlay').classList.remove('show');}
+
+function renderLessonsEditor(){
+  const container=document.getElementById('lessonsEditor');
+  const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+  let html='';
+  schedule.forEach((lesson,index)=>{
+    html+=`<div class="lesson-edit-item"><div class="edit-label">Урок ${index+1}</div>
+      <div class="lesson-edit-row"><input type="text" class="edit-subject" value="${lesson.subject}" placeholder="Предмет"></div>
+      <div class="lesson-edit-row"><input type="time" class="edit-start" value="${lesson.start}"><input type="time" class="edit-end" value="${lesson.end}"></div>
+      <div class="lesson-edit-row"><input type="text" class="edit-room" value="${lesson.room}" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
+      <div class="lesson-edit-row"><input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание"></div>
+      <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})">🗑</button></div></div>`;
+  });
+  container.innerHTML=html;container.dataset.lessonCount=schedule.length;
+}
+function addNewLesson(){
+  const container=document.getElementById('lessonsEditor');
+  const count=parseInt(container.dataset.lessonCount)||0;
+  const duration=parseInt(document.getElementById('lessonDuration').value)||45;
+  const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+  let ns='08:30';
+  if(schedule.length>0){const last=schedule[schedule.length-1];const[h,m]=last.end.split(':').map(Number);const t=h*60+m+duration;ns=`${String(Math.floor(t/60)).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;}
+  const[sh,sm]=ns.split(':').map(Number);const et=sh*60+sm+duration;
+  const ne=`${String(Math.floor(et/60)).padStart(2,'0')}:${String(et%60).padStart(2,'0')}`;
+  container.insertAdjacentHTML('beforeend',`<div class="lesson-edit-item"><div class="edit-label">Урок ${count+1}</div>
+    <div class="lesson-edit-row"><input type="text" class="edit-subject" value="Новый предмет" placeholder="Предмет"></div>
+    <div class="lesson-edit-row"><input type="time" class="edit-start" value="${ns}"><input type="time" class="edit-end" value="${ne}"></div>
+    <div class="lesson-edit-row"><input type="text" class="edit-room" value="101" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
+    <div class="lesson-edit-row"><input type="text" class="edit-homework" value="" placeholder="Домашнее задание"></div>
+    <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${count})">🗑</button></div></div>`);
+  container.dataset.lessonCount=count+1;
+}
+function deleteLesson(index){
+  const container=document.getElementById('lessonsEditor');
+  const items=container.querySelectorAll('.lesson-edit-item');
+  if(items.length<=1){alert('Должен быть хотя бы один урок!');return;}
+  items[index].remove();
+  const ni=container.querySelectorAll('.lesson-edit-item');
+  ni.forEach((item,i)=>{item.querySelector('.edit-label').textContent=`Урок ${i+1}`;item.querySelector('.delete-btn').setAttribute('onclick',`deleteLesson(${i})`);});
+  container.dataset.lessonCount=ni.length;
+}
+function saveSchedule(){
+  const container=document.getElementById('lessonsEditor');const items=container.querySelectorAll('.lesson-edit-item');const ns=[];
+  items.forEach((item,index)=>{
+    const subj=item.querySelector('.edit-subject').value||`Урок ${index+1}`;
+    const st=item.querySelector('.edit-start').value;const en=item.querySelector('.edit-end').value;
+    const rm=item.querySelector('.edit-room').value||'101';
+    const hw=item.querySelector('.edit-homework').value||null;
+    ns.push({num:index+1,start:st,end:en,room:rm,subject:subj,homework:hw});
+    if(index<items.length-1){const[eh,em]=en.split(':').map(Number);const bt=eh*60+em+10;const be=`${String(Math.floor(bt/60)).padStart(2,'0')}:${String(bt%60).padStart(2,'0')}`;ns.push({breakTime:10,breakEnd:be});}
+  });
+  scheduleData[getDateKey(selectedDate)]=ns;renderSchedule();closeEditModal();
+}
+function resetToDefault(){delete scheduleData[getDateKey(selectedDate)];renderSchedule();closeEditModal();}
+function openNameModal(){document.getElementById('nameInput').value=document.getElementById('userName').textContent;document.getElementById('nameModalOverlay').classList.add('show');}
+function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
+function saveName(){const n=document.getElementById('nameInput').value.trim();if(n){document.getElementById('userName').textContent=n;closeNameModal();}}
+
+function renderSchool(){
+  const c=document.getElementById('schoolContent');
+  c.innerHTML=`
+    <div class="services-section">
+      <div class="services-header"><div class="services-title">СЕРВИСЫ</div><div class="services-expand">РАЗВЕРНУТЬ <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg></div></div>
+      <div class="services-grid">
+        <div class="service-item"><div class="service-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#f59e0b"/></svg></div><div class="service-name">Еда</div></div>
+        <div class="service-item"><div class="service-icon" style="background:#f3e8ff"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z" fill="#a855f7"/></svg></div><div class="service-name">Цифр. учитель</div></div>
+        <div class="service-item"><div class="service-icon" style="background:#fce7f3"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8z" fill="#ec4899"/></svg></div><div class="service-name">Кружки</div></div>
+        <div class="service-item"><div class="service-icon" style="background:#e0e7ff"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" fill="#6366f1"/></svg></div><div class="service-name">Посещаемость</div></div>
+        <div class="service-item"><div class="service-icon" style="background:#e0e7ff"><svg viewBox="0 0 24 24"><path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z" fill="#6366f1"/></svg></div><div class="service-name">Предметы</div></div>
+        <div class="service-item"><div class="service-icon" style="background:#fef3c7"><svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" fill="#f59e0b"/></svg></div><div class="service-name">Подарки</div></div>
+      </div>
+    </div>
+    <div class="today-section">
+      <div class="today-header">СЕГОДНЯ, 20 СЕНТЯБРЯ</div>
+      <div class="today-cards">
+        <div class="today-card">
+          <div class="today-card-title purple">ПОСЕЩАЕМОСТЬ</div>
+          <div class="today-card-row"><span class="today-card-label">вход</span><span class="today-card-value">–</span></div>
+          <div class="today-card-row"><span class="today-card-label">выход</span><span class="today-card-value">–</span></div>
+          <div class="today-card-row"><span class="today-card-label">план. пропуски</span><span class="today-card-value">–</span></div>
+        </div>
+        <div class="today-card">
+          <div class="today-card-title pink">ЕДА</div>
+          <div class="today-card-row"><span class="today-card-label">буфет</span><span class="today-card-value">–</span></div>
+          <div class="today-card-row"><span class="today-card-label">столовая</span><span class="today-card-value">–</span></div>
+          <div class="today-card-row"><span class="today-card-label">траты</span><span class="today-card-value">–</span></div>
+        </div>
+      </div>
+      <div class="rating-card">
+        <div class="today-card-title" style="background:#eef2ff;color:#4f46e5;margin-bottom:16px">РЕЙТИНГ</div>
+        <div class="rating-item"><div class="rating-position">18</div><div class="rating-bar"><div class="rating-bar-fill" style="width:30%;background:#e5e7eb"></div><div class="rating-bar-user">1 чел <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f472b6'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt=""></div></div><div class="rating-score">3,78</div></div>
+        <div class="rating-item"><div class="rating-position active">19</div><div class="rating-bar"><div class="rating-bar-fill" style="width:50%"></div><div class="rating-bar-user" style="background:#8b5cf6;color:white">1 чел <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3C/svg%3E" alt=""></div></div><div class="rating-score">3,38</div></div>
+        <div class="rating-item"><div class="rating-position">20</div><div class="rating-bar"><div class="rating-bar-fill" style="width:20%;background:#e5e7eb"></div><div class="rating-bar-user">1 чел <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a8a29e'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z'/%3E%3C/svg%3E" alt=""></div></div><div class="rating-score">3,00</div></div>
+      </div>
+      <div class="balance-card">
+        <div class="balance-label">БАЛАНС</div>
+        <div class="balance-value">180,22 ₽</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPortfolio(){
+  const c=document.getElementById('portfolioContent');
+  c.innerHTML=`
+    <div class="portfolio-tabs">
+      <button class="portfolio-tab active">Учёба</button>
+      <button class="portfolio-tab">Наука</button>
+      <button class="portfolio-tab">Спорт</button>
+      <button class="portfolio-tab">Творчество</button>
+    </div>
+    <div class="portfolio-section">
+      <div class="portfolio-section-title">Предметные результаты <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+      <div class="radar-card">
+        <div class="radar-chart">
+          <svg viewBox="0 0 280 280" style="width:100%;height:100%">
+            <circle cx="140" cy="140" r="120" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="140" cy="140" r="96" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="140" cy="140" r="72" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="140" cy="140" r="48" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+            <circle cx="140" cy="140" r="24" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+            <line x1="140" y1="20" x2="140" y2="260" stroke="#e5e7eb" stroke-width="1"/>
+            <line x1="260" y1="140" x2="20" y2="140" stroke="#e5e7eb" stroke-width="1"/>
+            <line x1="225" y1="55" x2="55" y2="225" stroke="#e5e7eb" stroke-width="1"/>
+            <line x1="225" y1="225" x2="55" y2="55" stroke="#e5e7eb" stroke-width="1"/>
+            <polygon points="140,40 180,80 200,140 180,200 140,240 100,200 80,140 100,80" fill="#f472b6" opacity="0.6"/>
+            <polygon points="140,50 170,90 190,140 170,190 140,230 110,190 90,140 110,90" fill="#a78bfa" opacity="0.6"/>
+            <polygon points="140,60 160,100 180,140 160,180 140,220 120,180 100,140 120,100" fill="#fbbf24" opacity="0.6"/>
+          </svg>
+          <div class="radar-center">3,38</div>
+        </div>
+        <div class="radar-item"><div class="radar-dot blue"></div><div class="radar-label">Физическая культура</div><div class="radar-value">5</div></div>
+        <div class="radar-item"><div class="radar-dot purple"></div><div class="radar-label">История</div><div class="radar-value">5</div></div>
+        <div class="radar-item"><div class="radar-dot pink"></div><div class="radar-label">Литература</div><div class="radar-value">3,5</div></div>
+      </div>
+    </div>
+    <div class="diagnostics-section">
+      <div class="portfolio-section-title">Независимые диагностики <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg></div>
+      <div class="diagnostic-card">
+        <div class="diagnostic-header"><div class="diagnostic-subject">Русский язык</div><div class="diagnostic-date">21.05.2025</div></div>
+        <div class="diagnostic-title">Оценка качества образования для обучающихся 5-8-х и 10-х классов. Резервный день</div>
+        <div class="diagnostic-result">
+          <div class="diagnostic-result-text">Твой результат:<br>6 баллов из 29 <span class="diagnostic-grade">Оценка 2</span></div>
+          <div class="circular-progress">
+            <svg width="48" height="48"><circle class="circular-progress-bg" cx="24" cy="24" r="20"/><circle class="circular-progress-bar" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="99.27"/></svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:600">21%</div>
+          </div>
+        </div>
+      </div>
+      <div class="diagnostic-card">
+        <div class="diagnostic-header"><div class="diagnostic-subject">Информатика</div><div class="diagnostic-date">16.05.2025</div></div>
+        <div class="diagnostic-title">Оценка качества образования для обучающихся 8-х классов</div>
+        <div class="diagnostic-result">
+          <div class="diagnostic-result-text">Твой результат:<br>1 балл из 10 <span class="diagnostic-grade">Оценка 2</span></div>
+          <div class="circular-progress">
+            <svg width="48" height="48"><circle class="circular-progress-bg" cx="24" cy="24" r="20"/><circle class="circular-progress-bar" cx="24" cy="24" r="20" stroke-dasharray="125.66" stroke-dashoffset="113.09" style="stroke:#ef4444"/></svg>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:600">10%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="diagnostics-section">
+      <div class="portfolio-section-title">Индивидуальные диагностики</div>
+      <div class="empty-state"><div class="empty-state-text">ЗДЕСЬ ПОКА НИЧЕГО НЕТ</div></div>
+    </div>
+  `;
+}
+
+// ===== СИСТЕМА РЕСЕЛЛЕРОВ =====
+let selectedPackage=null;
+let resellerClickCount=0;
+let resellerClickTimer=null;
+let currentResellerName=null;
+
+document.querySelector('.avatar-wrapper').addEventListener('click',function(){
+  resellerClickCount++;
+  clearTimeout(resellerClickTimer);
+  resellerClickTimer=setTimeout(()=>{resellerClickCount=0;},2000);
+  if(resellerClickCount>=3){resellerClickCount=0;openResellerPage();}
+});
+
+function openResellerPage(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageReseller').style.display='block';
+  document.getElementById('pageReseller').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  window.scrollTo(0,0);
+  renderReseller();
+}
+
+function closeResellerPage(){
+  document.getElementById('pageReseller').style.display='none';
+  document.getElementById('pageReseller').classList.remove('active');
+  document.querySelector('.bottom-nav').style.display='flex';
+  document.getElementById('calendarBlock').style.display='block';
+  document.getElementById('filtersBlock').style.display='flex';
+  document.getElementById('pageSchedule').style.display='block';
+  document.getElementById('pageSchedule').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderSchedule();
+}
+
+function renderReseller(){
+  const c=document.getElementById('resellerContent');
+  c.innerHTML=`
+    <div class="reseller-page">
+      <button class="reseller-back-btn" onclick="closeResellerPage()">← Назад к дневнику</button>
+      <div class="reseller-hero">
+        <div class="reseller-hero-title">💰 Программа партнёров</div>
+        <div class="reseller-hero-subtitle">Зарабатывай на продаже доступа к дневнику</div>
+      </div>
+      <div class="reseller-stats">
+        <div class="reseller-stat-card"><div class="reseller-stat-value">19-119₽</div><div class="reseller-stat-label">прибыль с продажи</div></div>
+        <div class="reseller-stat-card"><div class="reseller-stat-value">10-80₽</div><div class="reseller-stat-label">оптовая цена</div></div>
+        <div class="reseller-stat-card"><div class="reseller-stat-value">29-199₽</div><div class="reseller-stat-label">розничная цена</div></div>
+      </div>
+      <div class="reseller-hint">💡 <strong>Совет:</strong> Начни с пакета "Лайт" — низкий порог входа и быстрые продажи!</div>
+      <div class="reseller-section">
+        <div class="reseller-section-title">🎁 Пакеты для старта</div>
+        <div class="reseller-packages">
+          <div class="reseller-package" onclick="selectPackage(this,'light',10,100,190,1)">
+            <div class="reseller-package-header"><div class="reseller-package-name">🚀 Лайт</div><div class="reseller-package-price">100₽</div></div>
+            <div class="reseller-package-desc">10 ключей на 1 день (по 10₽)</div>
+            <div class="reseller-package-profit">💵 Твоя прибыль до 190₽ (продажа по 29₽)</div>
+          </div>
+          <div class="reseller-package" onclick="selectPackage(this,'middle',5,125,220,3)">
+            <div class="reseller-package-header"><div class="reseller-package-name">⚡ Мидл</div><div class="reseller-package-price">125₽</div></div>
+            <div class="reseller-package-desc">5 ключей на 3 дня (по 25₽)</div>
+            <div class="reseller-package-profit">💵 Твоя прибыль до 220₽ (продажа по 69₽)</div>
+          </div>
+          <div class="reseller-package" onclick="selectPackage(this,'start',5,400,595,30)">
+            <div class="reseller-package-header"><div class="reseller-package-name">💼 Старт</div><div class="reseller-package-price">400₽</div></div>
+            <div class="reseller-package-desc">5 ключей на 30 дней (по 80₽)</div>
+            <div class="reseller-package-profit">💵 Твоя прибыль до 595₽ (продажа по 199₽)</div>
+          </div>
+          <div class="reseller-package" onclick="selectPackage(this,'business',15,1200,1785,30)">
+            <div class="reseller-package-header"><div class="reseller-package-name">🔥 Бизнес</div><div class="reseller-package-price">1 200₽</div></div>
+            <div class="reseller-package-desc">15 ключей на 30 дней (по 80₽)</div>
+            <div class="reseller-package-profit">💵 Твоя прибыль до 1 785₽</div>
+          </div>
+          <div class="reseller-package" onclick="selectPackage(this,'opt',30,2400,3570,30)">
+            <div class="reseller-package-header"><div class="reseller-package-name">🏆 Опт</div><div class="reseller-package-price">2 400₽</div></div>
+            <div class="reseller-package-desc">30 ключей на 30 дней (по 80₽)</div>
+            <div class="reseller-package-profit">💵 Твоя прибыль до 3 570₽</div>
+          </div>
+        </div>
+      </div>
+      <div class="reseller-section">
+        <div class="reseller-section-title"> Таблица цен</div>
+        <table class="price-table">
+          <tr><th>Срок</th><th style="text-align:center">Оптом</th><th style="text-align:center">В розницу</th><th style="text-align:right">Прибыль</th></tr>
+          <tr><td>📅 1 день</td><td style="text-align:center">10₽</td><td style="text-align:center">29₽</td><td style="text-align:right" class="price-profit">19₽</td></tr>
+          <tr><td> 3 дня</td><td style="text-align:center">25₽</td><td style="text-align:center">69₽</td><td style="text-align:right" class="price-profit">44₽</td></tr>
+          <tr><td>📅 30 дней</td><td style="text-align:center">80₽</td><td style="text-align:center">199₽</td><td style="text-align:right" class="price-profit">119₽</td></tr>
+        </table>
+      </div>
+      <div class="reseller-section">
+        <div class="reseller-section-title">✅ Почему это выгодно?</div>
+        <div class="reseller-benefit"><div class="reseller-benefit-icon">💸</div><div><div class="reseller-benefit-title">Быстрый заработок</div><div class="reseller-benefit-text">Продай 10 ключей "Лайт" за день — получи 190₽ чистыми</div></div></div>
+        <div class="reseller-benefit"><div class="reseller-benefit-icon">📦</div><div><div class="reseller-benefit-title">Гибкие сроки</div><div class="reseller-benefit-text">Продавай ключи на 1, 3 или 30 дней — выбирай под клиента</div></div></div>
+        <div class="reseller-benefit"><div class="reseller-benefit-icon">🎓</div><div><div class="reseller-benefit-title">Обучение продажам</div><div class="reseller-benefit-text">Покажем, как легко продавать в школе и соцсетях</div></div></div>
+        <div class="reseller-benefit"><div class="reseller-benefit-icon"></div><div><div class="reseller-benefit-title">Бонусы за активность</div><div class="reseller-benefit-text">Приведи друга-реселлера — получи 2 ключа бесплатно</div></div></div>
+      </div>
+      <div class="reseller-section" id="resellerForm">
+        <div class="reseller-form-title">📝 Подать заявку</div>
+        <input type="text" class="reseller-input" id="resellerName" placeholder="Твоё имя или никнейм">
+        <input type="text" class="reseller-input" id="resellerContact" placeholder="Telegram (@username) или телефон">
+        <input type="text" class="reseller-input" id="resellerSchool" placeholder="Школа и класс (например: Школа №5, 9А)">
+        <textarea class="reseller-textarea" id="resellerWhy" placeholder="Почему хочешь стать реселлером? Сколько ключей планируешь продать в месяц?"></textarea>
+        <button class="reseller-submit" onclick="submitResellerApplication()">Отправить заявку</button>
+      </div>
+      <div class="reseller-success" id="resellerSuccess" style="display:none">
+        <div class="reseller-success-icon">✅</div>
+        <div class="reseller-success-title">Заявка отправлена!</div>
+        <div class="reseller-success-text">Я свяжусь с тобой в Telegram в течение 24 часов</div>
+      </div>
+      <div class="reseller-admin" id="resellerAdmin" style="display:none">
+        <div class="reseller-admin-title">📋 Заявки от реселлеров</div>
+        <div id="applicationsList"></div>
+        <button class="reseller-submit" style="margin-top:12px;background:#ff3b30" onclick="clearApplications()">Очистить все заявки</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectPackage(element,name,keys,price,profit,duration){
+  document.querySelectorAll('.reseller-package').forEach(p=>p.classList.remove('selected'));
+  element.classList.add('selected');
+  selectedPackage={name,keys,price,profit,duration};
+}
+
+async function submitResellerApplication(){
+  const name=document.getElementById('resellerName').value.trim();
+  const contact=document.getElementById('resellerContact').value.trim();
+  const school=document.getElementById('resellerSchool').value.trim();
+  const why=document.getElementById('resellerWhy').value.trim();
+  if(!name||!contact){alert('Пожалуйста, заполни имя и контакты');return;}
+  if(!selectedPackage){alert('Выбери пакет для старта');return;}
+  const submitBtn=document.querySelector('.reseller-submit');
+  const originalText=submitBtn.textContent;
+  submitBtn.disabled=true;
+  submitBtn.textContent='Отправка...';
+  const application={id:Date.now(),name,contact,school,why,package:selectedPackage,status:'pending',createdAt:new Date().toISOString()};
+  try{
+    await db.collection('reseller_applications').add({name,contact,school,why,package:selectedPackage,status:'pending',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    let applications=[];
+    try{const saved=localStorage.getItem('reseller_applications');if(saved)applications=JSON.parse(saved);}catch(e){}
+    applications.push(application);
+    localStorage.setItem('reseller_applications',JSON.stringify(applications));
+    sendTelegramNotification(application);
+    document.getElementById('resellerForm').style.display='none';
+    document.getElementById('resellerSuccess').style.display='block';
+    document.getElementById('resellerName').value='';
+    document.getElementById('resellerContact').value='';
+    document.getElementById('resellerSchool').value='';
+    document.getElementById('resellerWhy').value='';
+    document.querySelectorAll('.reseller-package').forEach(p=>p.classList.remove('selected'));
+    selectedPackage=null;
+  }catch(error){alert('Ошибка отправки: '+error.message);}
+  finally{submitBtn.disabled=false;submitBtn.textContent=originalText;}
+}
+
+async function sendTelegramNotification(app){
+  if(!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN==='ВСТАВЬ_СЮДА_ТОКЕН_БОТА') return;
+  if(!TELEGRAM_CHAT_ID || TELEGRAM_CHAT_ID==='ВСТАВЬ_СЮДА_CHAT_ID') return;
+  const durationDays=app.package.duration||30;
+  const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+  const message=`🔥 <b>Новая заявка от реселлера!</b>\n\n👤 <b>Имя:</b> ${app.name}\n📱 <b>Контакт:</b> ${app.contact}\n🏫 <b>Школа:</b> ${app.school||'Не указана'}\n📦 <b>Пакет:</b> ${app.package.name}\n   • Ключей: ${app.package.keys}\n   • Срок: ${durationText}\n   • Цена: ${app.package.price}₽\n <b>Потенциальная прибыль:</b> ${app.package.profit}₽\n💬 <b>Причина:</b> ${app.why||'Не указана'}\n\n📅 Дата: ${new Date().toLocaleString('ru-RU')}`;
+  try{await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TELEGRAM_CHAT_ID,text:message,parse_mode:'HTML'})});}catch(e){console.error('Telegram error:',e);}
+}
+
+async function loadApplications(){
+  const list=document.getElementById('applicationsList');
+  if(!list)return;
+  list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Загрузка...</div>';
+  try{
+    const snapshot=await db.collection('reseller_applications').orderBy('createdAt','desc').limit(50).get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Заявок пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const app=doc.data();
+      const date=app.createdAt?new Date(app.createdAt.toMillis()).toLocaleDateString('ru-RU'):'—';
+      const durationDays=app.package?.duration||30;
+      const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+      html+=`<div class="reseller-app-item">
+        <div class="reseller-app-name">${app.name}</div>
+        <div class="reseller-app-contact">${app.contact}</div>
+        <div class="reseller-app-school">${app.school||'Школа не указана'}</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px">📦 Пакет: ${app.package.name} (${app.package.keys} ключей на ${durationText}, ${app.package.price}₽)</div>
+        ${app.why?`<div style="font-size:12px;color:#8e8e93;margin-top:4px">"${app.why}"</div>`:''}
+        <div style="font-size:11px;color:#8e8e93;margin-top:4px">📅 ${date}</div>
+        <div class="reseller-app-status ${app.status}">${app.status==='pending'?'⏳ Ожидает':app.status==='approved'?'✅ Одобрено':'❌ Отклонено'}</div>
+        ${app.status==='pending'?`<div style="display:flex;gap:6px;margin-top:8px">
+          <button onclick="approveReseller('${doc.id}','${app.name}','${app.contact}','${app.school}',${app.package.keys},${durationDays})" style="flex:1;padding:6px;background:#dcfce7;color:#16a34a;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Одобрить</button>
+          <button onclick="rejectReseller('${doc.id}')" style="flex:1;padding:6px;background:#ffebee;color:#c62828;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer">Отклонить</button>
+        </div>`:''}
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+function generateKeyCode(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code='';
+  for(let i=0;i<3;i++){for(let j=0;j<4;j++){code+=chars.charAt(Math.floor(Math.random()*chars.length));}if(i<2)code+='-';}
+  return code.toLowerCase();
+}
+
+async function approveReseller(appId,name,contact,school,keys,requestedDuration){
+  const durationInput=prompt(`Одобрить реселлера "${name}"?\n\nПакет: ${requestedDuration===1?'Лайт (1 день)':requestedDuration===3?'Мидл (3 дня)':'30 дней'}\nКлючей: ${keys}\n\nПодтвердить срок (${requestedDuration}) или изменить?\nВведите: 1, 3 или 30 (или нажмите OK для подтверждения)`);
+  if(durationInput===null)return;
+  const durationDays=durationInput?parseInt(durationInput):(requestedDuration||30);
+  if(durationDays!==1&&durationDays!==3&&durationDays!==30){alert('❌ Введите 1, 3 или 30!');return;}
+  try{
+    await db.collection('reseller_applications').doc(appId).update({status:'approved'});
+    await db.collection('resellers').add({name,contact,school,status:'approved',package:{keys,durationDays},createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    for(let i=0;i<keys;i++){
+      const keyCode=generateKeyCode();
+      await db.collection('codes').doc(keyCode).set({used:false,deviceId:'',assignedTo:name,durationDays:durationDays,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+    alert(`✅ Реселлер "${name}" одобрен!\nСоздано ${keys} ключей на ${durationText}.`);
+    loadApplications();
+  }catch(error){alert('Ошибка: '+error.message);}
+}
+
+async function rejectReseller(appId){
+  if(!confirm('Отклонить заявку?'))return;
+  try{await db.collection('reseller_applications').doc(appId).update({status:'rejected'});loadApplications();}
+  catch(error){alert('Ошибка: '+error.message);}
+}
+
+function clearApplications(){if(confirm('Удалить все заявки?')){localStorage.removeItem('reseller_applications');loadApplications();}}
+
+function openResellerLogin(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageResellerLogin').style.display='block';
+  document.getElementById('pageResellerLogin').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  document.getElementById('resellerLoginError').style.display='none';
+  document.getElementById('resellerLoginName').value='';
+}
+function closeResellerLogin(){document.getElementById('pageResellerLogin').style.display='none';document.getElementById('pageResellerLogin').classList.remove('active');openResellerPage();}
+
+async function resellerLogin(){
+  const name=document.getElementById('resellerLoginName').value.trim();
+  const errorEl=document.getElementById('resellerLoginError');
+  if(!name){errorEl.textContent='Введи своё имя';errorEl.style.display='block';return;}
+  try{
+    const snapshot=await db.collection('resellers').where('name','==',name).where('status','==','approved').get();
+    if(snapshot.empty){errorEl.textContent='Реселлер не найден или заявка не одобрена';errorEl.style.display='block';return;}
+    currentResellerName=name;
+    localStorage.setItem('current_reseller',name);
+    openResellerDashboard(snapshot.docs[0].data());
+  }catch(error){errorEl.textContent='Ошибка: '+error.message;errorEl.style.display='block';}
+}
+
+function closeResellerDashboard(){
+  currentResellerName=null;
+  localStorage.removeItem('current_reseller');
+  document.getElementById('pageResellerDashboard').style.display='none';
+  document.getElementById('pageResellerDashboard').classList.remove('active');
+  openResellerPage();
+}
+
+async function openResellerDashboard(resellerData){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageResellerDashboard').style.display='block';
+  document.getElementById('pageResellerDashboard').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  document.getElementById('resellerNameDisplay').textContent=currentResellerName;
+  await loadResellerKeys();
+}
+
+async function loadResellerKeys(){
+  if(!currentResellerName)return;
+  const listEl=document.getElementById('resellerKeysList');
+  listEl.innerHTML='<div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div>';
+  try{
+    const snapshot=await db.collection('codes').where('assignedTo','==',currentResellerName).get();
+    if(snapshot.empty){listEl.innerHTML='<div style="background:white;border-radius:16px;padding:20px;text-align:center;color:#8e8e93">У тебя пока нет ключей. Обратись к владельцу.</div>';updateResellerStats(0,0,0);return;}
+    let total=0,used=0,free=0;
+    let html='';
+    snapshot.forEach(doc=>{
+      const key=doc.data();
+      total++;
+      const isUsed=key.used===true;
+      if(isUsed)used++;else free++;
+      const statusClass=isUsed?'used':'free';
+      const statusText=isUsed?'✅ Продан':'🟢 Свободен';
+      const deviceId=key.deviceId||'—';
+      const expiresAt=key.expiresAt?new Date(key.expiresAt.toMillis()).toLocaleDateString('ru-RU'):'—';
+      const durationDays=key.durationDays||30;
+      const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+      html+=`<div class="reseller-key-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div class="reseller-key-code">${doc.id}</div>
+          <div class="reseller-key-status ${statusClass}">${statusText}</div>
+        </div>
+        <div style="font-size:12px;color:#8e8e93;margin-bottom:8px">⏱️ Срок: ${durationText}</div>
+        ${isUsed?`<div style="font-size:12px;color:#8e8e93;margin-bottom:4px">Активирован: ${deviceId}</div><div style="font-size:12px;color:#8e8e93">Действует до: ${expiresAt}</div>`:`<button class="reseller-copy-btn" onclick="copyKey('${doc.id}')">📋 Копировать ключ</button>`}
+      </div>`;
+    });
+    listEl.innerHTML=html;
+    updateResellerStats(total,used,free);
+  }catch(error){listEl.innerHTML=`<div style="background:#ffebee;border-radius:16px;padding:20px;text-align:center;color:#c62828">Ошибка: ${error.message}</div>`;}
+}
+
+function updateResellerStats(total,used,free){
+  document.getElementById('statTotal').textContent=total;
+  document.getElementById('statUsed').textContent=used;
+  document.getElementById('statFree').textContent=free;
+  document.getElementById('statEarnings').textContent=(used*50)+'₽';
+}
+
+function copyKey(key){
+  navigator.clipboard.writeText(key).then(()=>{alert('✅ Ключ скопирован: '+key);}).catch(()=>{const textarea=document.createElement('textarea');textarea.value=key;document.body.appendChild(textarea);textarea.select();document.execCommand('copy');document.body.removeChild(textarea);alert('✅ Ключ скопирован: '+key);});
+}
+
+const originalRenderReseller=renderReseller;
+renderReseller=function(){
+  originalRenderReseller();
+  setTimeout(()=>{
+    const form=document.getElementById('resellerForm');
+    if(form&&!document.getElementById('resellerLoginBtn')){
+      const btn=document.createElement('button');
+      btn.id='resellerLoginBtn';
+      btn.className='reseller-submit';
+      btn.style.cssText='margin-top:12px;background:#f2f2f7;color:#000';
+      btn.textContent='🔑 Я уже реселлер — войти';
+      btn.onclick=openResellerLogin;
+      form.appendChild(btn);
+    }
+  },100);
+};
+
+// ===== АДМИН-ПАНЕЛЬ =====
+let currentAdminTab='applications';
+let avatarPressTimer=null;
+document.querySelector('.avatar-wrapper').addEventListener('mousedown',function(){avatarPressTimer=setTimeout(()=>{openAdminLogin();},2000);});
+document.querySelector('.avatar-wrapper').addEventListener('mouseup',function(){clearTimeout(avatarPressTimer);});
+document.querySelector('.avatar-wrapper').addEventListener('touchstart',function(){avatarPressTimer=setTimeout(()=>{openAdminLogin();},2000);});
+document.querySelector('.avatar-wrapper').addEventListener('touchend',function(){clearTimeout(avatarPressTimer);});
+
+function openAdminLogin(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageAdminLogin').style.display='block';
+  document.getElementById('pageAdminLogin').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  document.getElementById('adminLoginError').style.display='none';
+  document.getElementById('adminPasswordInput').value='';
+}
+function closeAdminLogin(){
+  document.getElementById('pageAdminLogin').style.display='none';
+  document.getElementById('pageAdminLogin').classList.remove('active');
+  document.querySelector('.bottom-nav').style.display='flex';
+  document.getElementById('calendarBlock').style.display='block';
+  document.getElementById('filtersBlock').style.display='flex';
+  document.getElementById('pageSchedule').style.display='block';
+  document.getElementById('pageSchedule').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderSchedule();
+}
+
+async function adminLogin(){
+  const password=document.getElementById('adminPasswordInput').value;
+  const errorEl=document.getElementById('adminLoginError');
+  if(!password){errorEl.textContent='Введите пароль';errorEl.style.display='block';return;}
+  try{
+    const configDoc=await db.collection('admin_settings').doc('config').get();
+    if(!configDoc.exists){
+      const passwordHash=await hashPassword(password);
+      await db.collection('admin_settings').doc('config').set({passwordHash:passwordHash,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+      alert('✅ Пароль установлен! Теперь войдите снова.');
+      document.getElementById('adminPasswordInput').value='';
+      return;
+    }
+    const storedHash=configDoc.data().passwordHash;
+    const inputHash=await hashPassword(password);
+    if(storedHash===inputHash){
+      localStorage.setItem('admin_authenticated','true');
+      localStorage.setItem('admin_auth_time',Date.now().toString());
+      openAdminPanel();
+    }else{errorEl.textContent='Неверный пароль';errorEl.style.display='block';}
+  }catch(error){errorEl.textContent='Ошибка: '+error.message;errorEl.style.display='block';}
+}
+
+async function hashPassword(password){
+  const encoder=new TextEncoder();
+  const data=encoder.encode(password+'dnevnik_salt_2026');
+  const hashBuffer=await crypto.subtle.digest('SHA-256',data);
+  const hashArray=Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function openAdminPanel(){
+  document.querySelectorAll('.page').forEach(p=>{p.style.display='none';p.classList.remove('active');});
+  document.getElementById('pageAdmin').style.display='block';
+  document.getElementById('pageAdmin').classList.add('active');
+  document.querySelector('.bottom-nav').style.display='none';
+  document.getElementById('calendarBlock').style.display='none';
+  document.getElementById('filtersBlock').style.display='none';
+  window.scrollTo(0,0);
+  renderAdmin();
+}
+function closeAdminPanel(){
+  document.getElementById('pageAdmin').style.display='none';
+  document.getElementById('pageAdmin').classList.remove('active');
+  document.querySelector('.bottom-nav').style.display='flex';
+  document.getElementById('calendarBlock').style.display='block';
+  document.getElementById('filtersBlock').style.display='flex';
+  document.getElementById('pageSchedule').style.display='block';
+  document.getElementById('pageSchedule').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item').classList.add('active');
+  renderSchedule();
+}
+
+function renderAdmin(){
+  const c=document.getElementById('adminContent');
+  c.innerHTML=`
+    <div class="admin-page">
+      <button class="reseller-back-btn" onclick="closeAdminPanel()">← Выйти из админки</button>
+      <div class="admin-hero">
+        <div class="admin-hero-title">🔐 Админ-панель</div>
+        <div class="admin-hero-subtitle">Управление реселлерами и ключами</div>
+      </div>
+      <div class="admin-stats">
+        <div class="admin-stat-card"><div class="admin-stat-value" id="adminTotalKeys">0</div><div class="admin-stat-label">Всего ключей</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-value" id="adminFreeKeys">0</div><div class="admin-stat-label">Свободно</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-value" id="adminUsedKeys">0</div><div class="admin-stat-label">Продано</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-value" id="adminResellers">0</div><div class="admin-stat-label">Реселлеров</div></div>
+      </div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" onclick="switchAdminTab('applications',this)">📋 Заявки</button>
+        <button class="admin-tab" onclick="switchAdminTab('keys',this)">🔑 Ключи</button>
+        <button class="admin-tab" onclick="switchAdminTab('resellers',this)">👥 Реселлеры</button>
+        <button class="admin-tab" onclick="switchAdminTab('settings',this)">⚙️ Настройки</button>
+      </div>
+      <div id="adminTabContent"></div>
+    </div>
+  `;
+  switchAdminTab('applications');
+  loadAdminStats();
+}
+
+async function loadAdminStats(){
+  try{
+    const codesSnapshot=await db.collection('codes').get();
+    const resellersSnapshot=await db.collection('resellers').where('status','==','approved').get();
+    let total=0,used=0,free=0;
+    codesSnapshot.forEach(doc=>{total++;if(doc.data().used)used++;else free++;});
+    document.getElementById('adminTotalKeys').textContent=total;
+    document.getElementById('adminFreeKeys').textContent=free;
+    document.getElementById('adminUsedKeys').textContent=used;
+    document.getElementById('adminResellers').textContent=resellersSnapshot.size;
+  }catch(error){console.error('Stats error:',error);}
+}
+
+function switchAdminTab(tab,btn){
+  currentAdminTab=tab;
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelector(`.admin-tab:nth-child(${tab==='applications'?1:tab==='keys'?2:tab==='resellers'?3:4})`).classList.add('active');
+  const content=document.getElementById('adminTabContent');
+  if(tab==='applications'){
+    content.innerHTML='<div class="admin-section"><div class="admin-section-title">📋 Заявки от реселлеров</div><div id="adminApplicationsList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div></div>';
+    loadAdminApplications();
+  }else if(tab==='keys'){
+    content.innerHTML=`<div class="admin-section"><div class="admin-section-title">🔑 Все ключи</div><div style="margin-bottom:16px"><button class="admin-btn admin-btn-primary" onclick="generateKeysPrompt()">+ Создать ключи</button></div><div id="adminKeysList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div></div>`;
+    loadAdminKeys();
+  }else if(tab==='resellers'){
+    content.innerHTML='<div class="admin-section"><div class="admin-section-title">👥 Активные реселлеры</div><div id="adminResellersList"><div style="text-align:center;padding:20px;color:#8e8e93">Загрузка...</div></div></div>';
+    loadAdminResellers();
+  }else if(tab==='settings'){
+    content.innerHTML=`<div class="admin-section"><div class="admin-section-title">️ Настройки</div><div class="edit-field"><label>Изменить пароль администратора</label><input type="password" id="newAdminPassword" class="admin-input" placeholder="Новый пароль"><button class="admin-btn admin-btn-primary" onclick="changeAdminPassword()" style="width:100%">Изменить пароль</button></div><div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e5ea"><button class="admin-btn admin-btn-danger" onclick="logoutAdmin()" style="width:100%"> Выйти из админки</button></div></div>`;
+  }
+}
+
+async function loadAdminApplications(){
+  const list=document.getElementById('adminApplicationsList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('reseller_applications').orderBy('createdAt','desc').limit(50).get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Заявок пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const app=doc.data();
+      const date=app.createdAt?new Date(app.createdAt.toMillis()).toLocaleDateString('ru-RU'):'—';
+      const durationDays=app.package?.duration||30;
+      const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+      html+=`<div class="reseller-app-item">
+        <div class="reseller-app-name">${app.name}</div>
+        <div class="reseller-app-contact">${app.contact}</div>
+        <div class="reseller-app-school">${app.school||'Школа не указана'}</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px"> Пакет: ${app.package.name} (${app.package.keys} ключей на ${durationText}, ${app.package.price}₽)</div>
+        ${app.why?`<div style="font-size:12px;color:#8e8e93;margin-top:4px">"${app.why}"</div>`:''}
+        <div style="font-size:11px;color:#8e8e93;margin-top:4px">📅 ${date}</div>
+        <div class="reseller-app-status ${app.status}">${app.status==='pending'?'⏳ Ожидает':app.status==='approved'?'✅ Одобрено':'❌ Отклонено'}</div>
+        ${app.status==='pending'?`<div style="display:flex;gap:6px;margin-top:8px">
+          <button onclick="approveReseller('${doc.id}','${app.name}','${app.contact}','${app.school}',${app.package.keys},${durationDays})" class="admin-btn admin-btn-success" style="flex:1">Одобрить</button>
+          <button onclick="rejectReseller('${doc.id}')" class="admin-btn admin-btn-danger" style="flex:1">Отклонить</button>
+        </div>`:''}
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function loadAdminKeys(){
+  const list=document.getElementById('adminKeysList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('codes').orderBy('createdAt','desc').limit(100).get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Ключей пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const key=doc.data();
+      const isUsed=key.used===true;
+      const statusClass=isUsed?'used':'free';
+      const statusText=isUsed?'✅ Продан':'🟢 Свободен';
+      const assignedTo=key.assignedTo||'—';
+      const deviceId=key.deviceId||'—';
+      const durationDays=key.durationDays||30;
+      const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+      const expiresAt=key.expiresAt?new Date(key.expiresAt.toMillis()).toLocaleDateString('ru-RU'):'—';
+      html+=`<div class="admin-key-item">
+        <div>
+          <div class="admin-key-code">${doc.id} <span class="admin-key-duration">${durationText}</span></div>
+          <div style="font-size:11px;color:#8e8e93;margin-top:4px">👤 Реселлер: ${assignedTo}</div>
+          ${isUsed?`<div style="font-size:11px;color:#8e8e93">📱 Активирован: ${deviceId}</div><div style="font-size:11px;color:#8e8e93">📅 До: ${expiresAt}</div>`:''}
+        </div>
+        <div class="admin-key-status ${statusClass}">${statusText}</div>
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function loadAdminResellers(){
+  const list=document.getElementById('adminResellersList');
+  if(!list)return;
+  try{
+    const snapshot=await db.collection('resellers').where('status','==','approved').get();
+    if(snapshot.empty){list.innerHTML='<div style="text-align:center;color:#8e8e93;padding:20px">Реселлеров пока нет</div>';return;}
+    let html='';
+    snapshot.forEach(doc=>{
+      const reseller=doc.data();
+      const durationDays=reseller.package?.durationDays||30;
+      const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+      html+=`<div class="reseller-app-item">
+        <div class="reseller-app-name">${reseller.name}</div>
+        <div class="reseller-app-contact">${reseller.contact}</div>
+        <div class="reseller-app-school">${reseller.school||'Школа не указана'}</div>
+        <div style="font-size:12px;color:#8e8e93;margin-top:4px">📦 Пакет: ${reseller.package.keys} ключей на ${durationText}</div>
+      </div>`;
+    });
+    list.innerHTML=html;
+  }catch(error){list.innerHTML='<div style="text-align:center;color:#ff3b30;padding:20px">Ошибка загрузки</div>';}
+}
+
+async function generateKeysPrompt(){
+  const resellerName=prompt('Введите имя реселлера (кому назначить ключи):');
+  if(!resellerName)return;
+  const count=prompt('Сколько ключей создать?');
+  if(!count||isNaN(count))return;
+  const numKeys=parseInt(count);
+  if(numKeys<1||numKeys>100){alert('Введите число от 1 до 100');return;}
+  const durationInput=prompt('На сколько дней? (1, 3 или 30)');
+  const durationDays=parseInt(durationInput);
+  if(durationDays!==1&&durationDays!==3&&durationDays!==30){alert('Введите 1, 3 или 30');return;}
+  try{
+    for(let i=0;i<numKeys;i++){
+      const keyCode=generateKeyCode();
+      await db.collection('codes').doc(keyCode).set({used:false,deviceId:'',assignedTo:resellerName,durationDays:durationDays,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }
+    const durationText=durationDays===1?'1 день':durationDays===3?'3 дня':durationDays+' дней';
+    alert(`✅ Создано ${numKeys} ключей на ${durationText} для "${resellerName}"`);
+    loadAdminKeys();
+    loadAdminStats();
+  }catch(error){alert('Ошибка: '+error.message);}
+}
+
+async function changeAdminPassword(){
+  const newPassword=document.getElementById('newAdminPassword').value;
+  if(!newPassword){alert('Введите новый пароль');return;}
+  if(newPassword.length<6){alert('Пароль должен быть минимум 6 символов');return;}
+  try{
+    const passwordHash=await hashPassword(newPassword);
+    await db.collection('admin_settings').doc('config').update({passwordHash:passwordHash});
+    alert('✅ Пароль изменён!');
+    document.getElementById('newAdminPassword').value='';
+  }catch(error){alert('Ошибка: '+error.message);}
+}
+
+function logoutAdmin(){
+  localStorage.removeItem('admin_authenticated');
+  localStorage.removeItem('admin_auth_time');
+  closeAdminPanel();
+}
+
+renderCalendar();renderSchedule();
+</script>
+</body>
+</html>
