@@ -770,16 +770,38 @@ async function checkPassword(){
   }catch(error){errorEl.textContent='Ошибка: '+error.message;btn.disabled=false;btn.textContent='Разблокировать';}
 }
 
-window.addEventListener('load',async()=>{
+async function checkSubscription(){
   const unlocked=sessionStorage.getItem('device_unlocked');
   const expires=parseInt(sessionStorage.getItem('device_expires')||'0');
-  if(unlocked&&expires>Date.now()){unlockApp();renderCalendar();renderSchedule();return;}
   
+  if(unlocked && expires <= Date.now()){
+    sessionStorage.removeItem('device_unlocked');
+    sessionStorage.removeItem('device_expires');
+    document.getElementById('lockScreen').classList.remove('hidden');
+    document.getElementById('lockScreen').style.display='flex';
+    document.getElementById('lockSubtitle').textContent='Подписка истекла';
+    document.getElementById('lockDaysLeft').textContent='Введите новый код для продления';
+    document.getElementById('lockDaysLeft').style.color='#ff6b6b';
+    document.getElementById('lockInputWrapper').style.display='block';
+    document.getElementById('lockBtn').style.display='block';
+    document.getElementById('lockHint').style.display='block';
+    return false;
+  }
+  
+  if(unlocked && expires > Date.now()){
+    return true;
+  }
+  
+  return false;
+}
+
+window.addEventListener('load',async()=>{
   const lockInput=document.getElementById('lockPasswordInput');
   lockInput.addEventListener('keypress',e=>{if(e.key==='Enter')checkPassword();});
   const deviceId=getDeviceId();
   const subtitle=document.getElementById('lockSubtitle');
   const daysLeftEl=document.getElementById('lockDaysLeft');
+  
   try{
     subtitle.textContent='Проверка активации...';
     const deviceRef=db.collection('devices').doc(deviceId);
@@ -820,6 +842,17 @@ window.addEventListener('load',async()=>{
   }
   renderCalendar();renderSchedule();
 });
+
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){
+    checkSubscription();
+  }
+});
+
+setInterval(()=>{
+  checkSubscription();
+},5*60*1000);
+
 window.checkPassword=checkPassword;
 </script>
 
