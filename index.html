@@ -1359,7 +1359,14 @@ function closeAvatarPicker(){
   if(overlay)overlay.remove();
 }
 function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
-function saveName(){const n=document.getElementById('nameInput').value.trim();if(n){document.getElementById('userName').textContent=n;closeNameModal();}}
+function saveName(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(n){
+    document.getElementById('userName').textContent=n;
+    localStorage.setItem('user_name',n);
+    closeNameModal();
+  }
+}
 
 function renderSchool(){
   const c=document.getElementById('schoolContent');
