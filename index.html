@@ -1302,7 +1302,10 @@ function selectAvatar(emoji){
   loadCurrentAvatar();
   alert('✅ Аватарка изменена на '+emoji);
 }
-
+function selectAvatarColor(color){
+  localStorage.setItem('avatar_color',color);
+  loadCurrentAvatar();
+}
 function resetAvatar(){
   localStorage.removeItem('user_avatar');
   location.reload();
