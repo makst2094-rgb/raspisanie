@@ -1275,6 +1275,10 @@ function saveSchedule(){
 }
 function resetToDefault(){delete scheduleData[getDateKey(selectedDate)];renderSchedule();closeEditModal();}
 function openNameModal(){
+  const savedName=localStorage.getItem('user_name');
+  if(savedName){
+    document.getElementById('userName').textContent=savedName;
+  }
   document.getElementById('nameInput').value=document.getElementById('userName').textContent;
   document.getElementById('nameModalOverlay').classList.add('show');
   loadCurrentAvatar();
