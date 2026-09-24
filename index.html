@@ -2230,6 +2230,11 @@ function generateSchedule(){
   renderCalendar();
   renderSchedule();
 }
+  // Загружаем сохранённое имя при старте
+const savedName=localStorage.getItem('user_name');
+if(savedName){
+  document.getElementById('userName').textContent=savedName;
+}
 renderCalendar();renderSchedule();
 </script>
 </body>
