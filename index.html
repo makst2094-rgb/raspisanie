@@ -1312,9 +1312,24 @@ function openAvatarPicker(){
   const isOpt=isReseller && (packageType==='opt' || keysCount>=30);
   const currentColor=localStorage.getItem('avatar_color')||'linear-gradient(145deg,#1a1a3e,#2a2a5e,#3d3d7a)';
 
-  const standardEmojis=['😀','😎','🤓','','🦊','🐱','','🐼','🐸','','🎨','🎭','','🚀','🎯','','🎲','🍕','','🍟','🍩','','🌺','🌙','☀️','🏀','🎳','','🎡','🎢'];
-  const resellerEmojis=['💼','🤝','💰','📊','📈','💡','🔑','🎯'];
-  const optEmojis=['👑','','💎','⭐','🔥','','✨','💫'];
+  const standardEmojis=[
+  '😀','😎','🤓','🧠',
+  '🦊','🐱','','🐼','🐸','',
+  '🎨','','🚀','🎯','','🎲',
+  '🍕','🍔','🍟','🍩',
+  '🌸','🌺','🌙','☀️',
+  '','🎳','🎠','','🎢'
+];
+ const resellerEmojis=[
+  '💼','','💰','📊',
+  '📈','💡','🔑','',
+  '🎯','','🏆','⚡'
+];
+  const optEmojis=[
+  '','🔥','✨','',
+  '🌟','','🐉','🦁',
+  '🦄','⚔️','🛡️','🏅'
+];
 
   const standardColors=[
     {name:'Обычный',value:'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'},
