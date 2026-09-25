@@ -1279,13 +1279,15 @@ function openNameModal(){
   document.getElementById('nameModalOverlay').classList.add('show');
   loadCurrentAvatar();
 }
-
 function loadCurrentAvatar(){
   const savedAvatar=localStorage.getItem('user_avatar');
+  const savedColor=localStorage.getItem('avatar_color')||'linear-gradient(145deg,#1a1a3e,#2a2a5e,#3d3d7a)';
   const avatarContainer=document.querySelector('.avatar');
+  if(!avatarContainer)return;
   if(savedAvatar){
-    avatarContainer.innerHTML=`<div style="font-size:32px">${savedAvatar}</div>`;
+    avatarContainer.innerHTML='<div style="font-size:32px">'+savedAvatar+'</div>';
   }
+  avatarContainer.style.background=savedColor;
 }
 
 function selectAvatar(emoji){
