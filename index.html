@@ -1310,57 +1310,42 @@ function openAvatarPicker(){
   const keysCount=parseInt(localStorage.getItem('reseller_keys')||'0');
   const packageType=localStorage.getItem('reseller_package_type')||'';
   const isOpt=isReseller && (packageType==='opt' || keysCount>=30);
-  const currentColor=localStorage.getItem('avatar_color')||'linear-gradient(145deg,#1a1a3e,#2a2a5e,#3d3d7a)';
 
-  const standardEmojis=[
-  '😀','😎','🤓','🧠',
-  '🦊','🐱','','🐼','🐸','',
-  '🎨','','🚀','🎯','','🎲',
-  '🍕','🍔','🍟','🍩',
-  '🌸','🌺','🌙','☀️',
-  '','🎳','🎠','','🎢'
-];
- const resellerEmojis=[
-  '💼','','💰','📊',
-  '📈','💡','🔑','',
-  '🎯','','🏆','⚡'
-];
-  const optEmojis=[
-  '','🔥','✨','',
-  '🌟','','🐉','🦁',
-  '🦄','⚔️','🛡️','🏅'
-];
+  const standardEmojis=['😀','😎','','🧠','🦊','','🐶','🐼','','🐲','🎨','','🚀','🎯','','🎲','🍕','','🍟','🍩','','🌺','🌙','☀️','🏀','🎳','','🎡','🎢'];
+  const resellerEmojis=['💼','🤝','💰','📊','📈','💡','🔑','🦅','🎯','🏆','','🌟'];
+  const optEmojis=['👑','🔥','✨','💎','🌟','','🐉','🦁','','⚔️','🛡️','🏅'];
 
   const standardColors=[
-  {name:'Лаванда',value:'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)'},
-  {name:'Небо',value:'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)'},
-  {name:'Мята',value:'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)'},
-  {name:'Персик',value:'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)'},
-  {name:'Закат',value:'linear-gradient(135deg,#fa709a 0%,#fee140 100%)'},
-  {name:'Роза',value:'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)'},
-  {name:'Океан',value:'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)'},
-  {name:'Фиалка',value:'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'}
-];
+    {name:'Лаванда',value:'linear-gradient(135deg,#a18cd1 0%,#fbc2eb 100%)'},
+    {name:'Небо',value:'linear-gradient(135deg,#89f7fe 0%,#66a6ff 100%)'},
+    {name:'Мята',value:'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)'},
+    {name:'Персик',value:'linear-gradient(135deg,#ffecd2 0%,#fcb69f 100%)'},
+    {name:'Закат',value:'linear-gradient(135deg,#fa709a 0%,#fee140 100%)'},
+    {name:'Роза',value:'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)'},
+    {name:'Океан',value:'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)'},
+    {name:'Фиалка',value:'linear-gradient(135deg,#667eea 0%,#764ba2 100%)'}
+  ];
   const resellerColors=[
-  {name:'Оникс Блэк',value:'linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)'},
-  {name:'Глубина',value:'linear-gradient(135deg,#000428 0%,#004e92 100%)'},
-  {name:'Кровавая Луна',value:'linear-gradient(135deg,#cb2d3e 0%,#ef473a 100%)'},
-  {name:'Изумруд',value:'linear-gradient(135deg,#134e5e 0%,#71b280 100%)'},
-  {name:'Пламя',value:'linear-gradient(135deg,#ee0979 0%,#ff6a00 100%)'},
-  {name:'Сталь',value:'linear-gradient(135deg,#232526 0%,#414345 100%)'}
-];
+    {name:'Оникс Блэк',value:'linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)'},
+    {name:'Глубина',value:'linear-gradient(135deg,#000428 0%,#004e92 100%)'},
+    {name:'Кровавая Луна',value:'linear-gradient(135deg,#cb2d3e 0%,#ef473a 100%)'},
+    {name:'Изумруд',value:'linear-gradient(135deg,#134e5e 0%,#71b280 100%)'},
+    {name:'Пламя',value:'linear-gradient(135deg,#ee0979 0%,#ff6a00 100%)'},
+    {name:'Сталь',value:'linear-gradient(135deg,#232526 0%,#414345 100%)'}
+  ];
   const optColors=[
-  {name:'Абсолютный Блэк',value:'linear-gradient(135deg,#000000 0%,#0a0a0a 25%,#1a1a2e 50%,#16213e 75%,#0f3460 100%)'},
-  {name:'Чистое Золото',value:'linear-gradient(135deg,#FDEB71 0%,#F8D800 50%,#D4AF37 100%)'},
-  {name:'Голограмма',value:'linear-gradient(135deg,#E0C3FC 0%,#8EC5FC 50%,#F093FB 100%)'},
-  {name:'Королевский',value:'linear-gradient(135deg,#0F2027 0%,#203A43 25%,#2C5364 50%,#FFD700 75%,#FFA500 100%)'},
-  {name:'Космос',value:'linear-gradient(135deg,#FF00CC 0%,#333399 50%,#FFD700 100%)'},
-  {name:'Солнце',value:'linear-gradient(135deg,#FF512F 0%,#F09819 50%,#FFD700 100%)'}
-];
+    {name:'Абсолютный Блэк',value:'linear-gradient(135deg,#000000 0%,#0a0a0a 25%,#1a1a2e 50%,#16213e 75%,#0f3460 100%)'},
+    {name:'Чистое Золото',value:'linear-gradient(135deg,#FDEB71 0%,#F8D800 50%,#D4AF37 100%)'},
+    {name:'Голограмма',value:'linear-gradient(135deg,#E0C3FC 0%,#8EC5FC 50%,#F093FB 100%)'},
+    {name:'Королевский',value:'linear-gradient(135deg,#0F2027 0%,#203A43 25%,#2C5364 50%,#FFD700 75%,#FFA500 100%)'},
+    {name:'Космос',value:'linear-gradient(135deg,#FF00CC 0%,#333399 50%,#FFD700 100%)'},
+    {name:'Солнце',value:'linear-gradient(135deg,#FF512F 0%,#F09819 50%,#FFD700 100%)'}
+  ];
+
   let html='<div style="padding:20px">';
   html+='<h2 style="margin-bottom:20px;font-size:22px;font-weight:700">Выбери аватарку</h2>';
 
-  // ЦВЕТА ФОНА - СТАНДАРТНЫЕ
+  // ЦВЕТА - СТАНДАРТНЫЕ
   html+='<div style="margin-bottom:24px">';
   html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600">🎨 Цвет фона</h3>';
   html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
@@ -1370,10 +1355,10 @@ function openAvatarPicker(){
   }
   html+='</div></div>';
 
-  // ЦВЕТА РЕСЕЛЛЕРОВ
+  // ЦВЕТА - РЕСЕЛЛЕРЫ
   if(isReseller){
     html+='<div style="margin-bottom:24px">';
-    html+='<h3 style="font-size:14px;color:#4a6cf7;margin-bottom:12px;font-weight:600">💼 Эксклюзивные цвета реселлеров</h3>';
+    html+='<h3 style="font-size:14px;color:#4a6cf7;margin-bottom:12px;font-weight:600"> Эксклюзивные цвета реселлеров</h3>';
     html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">';
     for(let i=0;i<resellerColors.length;i++){
       const c=resellerColors[i];
@@ -1391,7 +1376,7 @@ function openAvatarPicker(){
     html+='</div></div>';
   }
 
-  // ЦВЕТА ОПТ
+  // ЦВЕТА - ОПТ
   if(isOpt){
     html+='<div style="margin-bottom:24px">';
     html+='<h3 style="font-size:14px;color:#ff9500;margin-bottom:12px;font-weight:600">👑 Эксклюзивные цвета пакета "Опт"</h3>';
@@ -1403,7 +1388,7 @@ function openAvatarPicker(){
     html+='</div></div>';
   }else{
     html+='<div style="margin-bottom:24px">';
-    html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600"> Эксклюзивные цвета пакета "Опт"</h3>';
+    html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600">🔒 Эксклюзивные цвета пакета "Опт"</h3>';
     html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;opacity:0.35">';
     for(let i=0;i<optColors.length;i++){
       const c=optColors[i];
@@ -1412,7 +1397,7 @@ function openAvatarPicker(){
     html+='</div></div>';
   }
 
-  // ЭМОДЗИ
+  // ЭМОДЗИ - СТАНДАРТНЫЕ
   html+='<div style="margin-bottom:24px">';
   html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600">😀 Эмодзи</h3>';
   html+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">';
@@ -1422,7 +1407,49 @@ function openAvatarPicker(){
   }
   html+='</div></div>';
 
-  html+='<button onclick="resetAvatar()" style="width:100%;padding:12px;background:#f2f2f7;color:#000;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px">Сбросить</button>';
+  // ЭМОДЗИ - РЕСЕЛЛЕРЫ
+  if(isReseller){
+    html+='<div style="margin-bottom:24px">';
+    html+='<h3 style="font-size:14px;color:#4a6cf7;margin-bottom:12px;font-weight:600">💼 Эксклюзивные эмодзи реселлеров</h3>';
+    html+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">';
+    for(let i=0;i<resellerEmojis.length;i++){
+      const e=resellerEmojis[i];
+      html+='<div onclick="selectAvatar(\''+e+'\')" style="font-size:28px;text-align:center;cursor:pointer;padding:10px;background:#eef2ff;border-radius:10px;border:2px solid #4a6cf7">'+e+'</div>';
+    }
+    html+='</div></div>';
+  }else{
+    html+='<div style="margin-bottom:24px">';
+    html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600">🔒 Эксклюзивные эмодзи реселлеров</h3>';
+    html+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;opacity:0.35">';
+    for(let i=0;i<resellerEmojis.length;i++){
+      const e=resellerEmojis[i];
+      html+='<div style="font-size:28px;text-align:center;padding:10px;background:#f2f2f7;border-radius:10px;border:2px solid #4a6cf7">'+e+'</div>';
+    }
+    html+='</div></div>';
+  }
+
+  // ЭМОДЗИ - ОПТ
+  if(isOpt){
+    html+='<div style="margin-bottom:24px">';
+    html+='<h3 style="font-size:14px;color:#ff9500;margin-bottom:12px;font-weight:600">👑 Эксклюзивные эмодзи пакета "Опт"</h3>';
+    html+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px">';
+    for(let i=0;i<optEmojis.length;i++){
+      const e=optEmojis[i];
+      html+='<div onclick="selectAvatar(\''+e+'\')" style="font-size:28px;text-align:center;cursor:pointer;padding:10px;background:#fff3cd;border-radius:10px;border:2px solid #ff9500">'+e+'</div>';
+    }
+    html+='</div></div>';
+  }else{
+    html+='<div style="margin-bottom:24px">';
+    html+='<h3 style="font-size:14px;color:#8e8e93;margin-bottom:12px;font-weight:600">🔒 Эксклюзивные эмодзи пакета "Опт"</h3>';
+    html+='<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;opacity:0.35">';
+    for(let i=0;i<optEmojis.length;i++){
+      const e=optEmojis[i];
+      html+='<div style="font-size:28px;text-align:center;padding:10px;background:#f2f2f7;border-radius:10px;border:2px solid #ff9500">'+e+'</div>';
+    }
+    html+='</div></div>';
+  }
+
+  html+='<button onclick="resetAvatar()" style="width:100%;padding:12px;background:#f2f2f7;color:#000;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:8px">🔄 Сбросить</button>';
   html+='<button onclick="closeAvatarPicker()" style="width:100%;padding:12px;background:#4a6cf7;color:white;border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer">Закрыть</button>';
   html+='</div>';
 
@@ -1433,11 +1460,6 @@ function openAvatarPicker(){
   overlay.onclick=function(e){if(e.target===overlay)closeAvatarPicker();};
   overlay.innerHTML='<div class="modal" style="max-height:85vh;overflow-y:auto;border-radius:20px 20px 0 0">'+html+'</div>';
   document.body.appendChild(overlay);
-}
-
-function closeAvatarPicker(){
-  const overlay=document.getElementById('avatarPickerOverlay');
-  if(overlay)overlay.remove();
 }
 function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
 function saveName(){const n=document.getElementById('nameInput').value.trim();if(n){document.getElementById('userName').textContent=n;closeNameModal();}}
