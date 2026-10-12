@@ -1070,6 +1070,7 @@ badge=`<div class="lesson-badge" style="background:#eef2ff"><span class="badge-n
 }else if(item.badge){
 badge=`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`;
 }
+}
       let sub=item.subtitle?`<div style="font-size:14px;color:#6e6e73;margin-bottom:8px">${item.subtitle}</div>`:'';
       let hw='';
       if(item.homework){hw=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание</div><div class="homework-text">${item.homework.replace(/\n/g,'<br>')}</div>${item.pending?`<div class="homework-pending ${item.pendingColor||''}">${item.pending}</div>`:''}</div></div>`;}
@@ -1213,6 +1214,7 @@ function closeEditModal(){document.getElementById('modalOverlay').classList.remo
 function openEditModal(){
 document.getElementById('modalOverlay').classList.add('show');
 updateDaysLeftDisplay();
+renderLessonsEditor();
 const modal=document.querySelector('#modalOverlay .modal');
 if(!document.getElementById('genScheduleBtn')){
 const btn=document.createElement('button');
@@ -1222,6 +1224,7 @@ btn.style.cssText='margin-top:12px;background:#7c5cfc;color:white;font-size:14px
 btn.textContent='🎲 Сгенерировать расписание';
 btn.onclick=openScheduleGenerator;
 modal.appendChild(btn);
+}
 }
 renderLessonsEditor();
 }
@@ -1253,6 +1256,24 @@ html+=`<div class="lesson-edit-item"><div class="edit-label">Урок ${index+1}
 container.innerHTML=html;container.dataset.lessonCount=schedule.length;
 }
 function setLessonGrade(index,grade){
+const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+if(schedule[index]){
+schedule[index].grade=grade;
+schedule[index].absent=false;
+renderLessonsEditor();
+}
+}
+function setLessonAbsent(index){
+const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+if(schedule[index]){
+schedule[index].absent=!schedule[index].absent;
+if(schedule[index].absent){
+schedule[index].grade=null;
+}
+renderLessonsEditor();
+}
+}
+  function setLessonGrade(index,grade){
 const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
 if(schedule[index]){
 schedule[index].grade=grade;
@@ -1509,7 +1530,7 @@ function closeAvatarPicker(){
     const overlay=document.getElementById('avatarPickerOverlay');
     if(overlay)overlay.remove();
 }
-function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}В
+function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
 function saveName(){const n=document.getElementById('nameInput').value.trim();if(n){document.getElementById('userName').textContent=n;closeNameModal();}}
 
 function renderSchool(){
