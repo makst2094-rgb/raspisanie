@@ -1062,13 +1062,13 @@ function renderSchedule(){
     if(item.type==='other'){html+=`<div class="section-title">${item.title}</div>`;item.items.forEach(ev=>{html+=`<div class="lesson-card"><div class="lesson-info"><span>${ev.time}</span></div><div class="lesson-subject gray">${ev.text}</div><div class="homework-text" style="margin-top:8px">${ev.sub}</div></div>`;});return;}
     if(item.breakTime!==undefined){html+=`<div class="break-row"><div class="break-left"><span class="break-icon">${runIcon}</span><span>Перемена ${item.breakTime} минут</span></div><span>${item.breakEnd||''}</span></div>`;}
     else{
-      let badge='';
+     let badge='';
 if(item.absent){
-    badge=`<div class="lesson-badge" style="background:#f3f4f6"><span class="badge-num" style="color:#000;font-size:20px;font-weight:700">Н</span></div>`;
+badge=`<div class="lesson-badge" style="background:#f3f4f6"><span class="badge-num" style="color:#000;font-size:22px;font-weight:700">Н</span></div>`;
 }else if(item.grade){
-    badge=`<div class="lesson-badge" style="background:#eef2ff"><span class="badge-num" style="color:#000;font-size:20px;font-weight:700">${item.grade}</span></div>`;
+badge=`<div class="lesson-badge" style="background:#eef2ff"><span class="badge-num" style="color:#000;font-size:22px;font-weight:700">${item.grade}<sub style="font-size:10px;color:#8e8e93;margin-left:2px">1</sub></span></div>`;
 }else if(item.badge){
-    badge=`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`;
+badge=`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`;
 }
       let sub=item.subtitle?`<div style="font-size:14px;color:#6e6e73;margin-bottom:8px">${item.subtitle}</div>`:'';
       let hw='';
