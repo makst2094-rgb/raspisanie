@@ -1459,13 +1459,9 @@ function openAvatarPicker(){
   overlay.style.zIndex='10000';
   overlay.onclick=function(e){if(e.target===overlay)closeAvatarPicker();};
   overlay.innerHTML='<div class="modal" style="max-height:85vh;overflow-y:auto;border-radius:20px 20px 0 0">'+html+'</div>';
- document.body.appendChild(overlay);
+  document.body.appendChild(overlay);
 }
-function closeAvatarPicker(){
-    const overlay=document.getElementById('avatarPickerOverlay');
-    if(overlay)overlay.remove();
-}
-function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}В
+function closeNameModal(){document.getElementById('nameModalOverlay').classList.remove('show');}
 function saveName(){const n=document.getElementById('nameInput').value.trim();if(n){document.getElementById('userName').textContent=n;closeNameModal();}}
 
 function renderSchool(){
