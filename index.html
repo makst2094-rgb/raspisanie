@@ -1062,7 +1062,14 @@ function renderSchedule(){
     if(item.type==='other'){html+=`<div class="section-title">${item.title}</div>`;item.items.forEach(ev=>{html+=`<div class="lesson-card"><div class="lesson-info"><span>${ev.time}</span></div><div class="lesson-subject gray">${ev.text}</div><div class="homework-text" style="margin-top:8px">${ev.sub}</div></div>`;});return;}
     if(item.breakTime!==undefined){html+=`<div class="break-row"><div class="break-left"><span class="break-icon">${runIcon}</span><span>Перемена ${item.breakTime} минут</span></div><span>${item.breakEnd||''}</span></div>`;}
     else{
-      let badge=item.badge?`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`:'';
+      let badge='';
+if(item.absent){
+badge=`<div class="lesson-badge" style="background:#f3f4f6"><span class="badge-num" style="color:#6b7280">Н</span></div>`;
+}else if(item.grade){
+badge=`<div class="lesson-badge" style="background:#eef2ff"><span class="badge-num" style="color:#4f46e5">${item.grade}<sub style="font-size:10px;color:#8e8e93;margin-left:2px">1</sub></span></div>`;
+}else if(item.badge){
+badge=`<div class="lesson-badge">${chatIcon}<span class="badge-num">${item.badge}</span><span class="badge-sub">1</span></div>`;
+}
       let sub=item.subtitle?`<div style="font-size:14px;color:#6e6e73;margin-bottom:8px">${item.subtitle}</div>`:'';
       let hw='';
       if(item.homework){hw=`<div class="homework-section"><span class="homework-icon">${houseIcon}</span><div class="homework-content"><div class="homework-title">Домашнее задание</div><div class="homework-text">${item.homework.replace(/\n/g,'<br>')}</div>${item.pending?`<div class="homework-pending ${item.pendingColor||''}">${item.pending}</div>`:''}</div></div>`;}
@@ -1204,92 +1211,64 @@ function switchGradeView(v,btn){currentGradeView=v;document.querySelectorAll('.s
 function closeEditModal(){document.getElementById('modalOverlay').classList.remove('show');}
 
 function openEditModal(){
-  document.getElementById('modalOverlay').classList.add('show');
-  function renderLessonsEditor(){
-    const container=document.getElementById('lessonsEditor');
-    const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
-    let html='';
-    schedule.forEach((lesson,index)=>{
-        const grade=lesson.grade||'';
-        const absent=lesson.absent||false;
-        html+=`<div class="lesson-edit-item">
-            <div class="edit-label">Урок ${lesson.num}</div>
-            <div class="lesson-edit-row">
-                <input type="text" class="edit-subject" value="${lesson.subject||''}" placeholder="Предмет">
-            </div>
-            <div class="lesson-edit-row">
-                <input type="time" class="edit-start" value="${lesson.start}">
-                <input type="time" class="edit-end" value="${lesson.end}">
-            </div>
-            <div class="lesson-edit-row">
-                <input type="text" class="edit-room" value="${lesson.room||''}" placeholder="Кабинет">
-                <input type="number" class="edit-break" value="${lesson.breakTime||10}" min="1" max="30" placeholder="Перемена">
-            </div>
-            <div class="lesson-edit-row">
-                <input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание">
-            </div>
-            <div class="lesson-edit-row" style="margin-top:12px">
-                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                    <span style="font-size:13px;color:#8e8e93">Оценка:</span>
-                    <button class="grade-btn ${grade===5?'active':''}" onclick="setLessonGrade(${index},5)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===5?'#8b5cf6':'white'};color:${grade===5?'white':'#000'};cursor:pointer;font-weight:600">5</button>
-                    <button class="grade-btn ${grade===4?'active':''}" onclick="setLessonGrade(${index},4)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===4?'#8b5cf6':'white'};color:${grade===4?'white':'#000'};cursor:pointer;font-weight:600">4</button>
-                    <button class="grade-btn ${grade===3?'active':''}" onclick="setLessonGrade(${index},3)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===3?'#8b5cf6':'white'};color:${grade===3?'white':'#000'};cursor:pointer;font-weight:600">3</button>
-                    <button class="grade-btn ${grade===2?'active':''}" onclick="setLessonGrade(${index},2)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===2?'#8b5cf6':'white'};color:${grade===2?'white':'#000'};cursor:pointer;font-weight:600">2</button>
-                    <button class="grade-btn ${absent?'active':''}" onclick="setLessonAbsent(${index})" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${absent?'#ef4444':'white'};color:${absent?'white':'#000'};cursor:pointer;font-weight:600">Н</button>
-                </div>
-            </div>
-        </div>`;
-    });
-    container.innerHTML=html;
+document.getElementById('modalOverlay').classList.add('show');
+updateDaysLeftDisplay();
+const modal=document.querySelector('#modalOverlay .modal');
+if(!document.getElementById('genScheduleBtn')){
+const btn=document.createElement('button');
+btn.id='genScheduleBtn';
+btn.className='add-lesson-btn';
+btn.style.cssText='margin-top:12px;background:#7c5cfc;color:white;font-size:14px';
+btn.textContent='🎲 Сгенерировать расписание';
+btn.onclick=openScheduleGenerator;
+modal.appendChild(btn);
 }
-
-function setLessonGrade(index,grade){
-    const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
-    if(schedule[index]){
-        schedule[index].grade=grade;
-        schedule[index].absent=false;
-        renderLessonsEditor();
-    }
-}
-
-function setLessonAbsent(index){
-    const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
-    if(schedule[index]){
-        schedule[index].absent=!schedule[index].absent;
-        if(schedule[index].absent){
-            schedule[index].grade=null;
-        }
-        renderLessonsEditor();
-    }
-}
-  updateDaysLeftDisplay();
-  
-  // Добавляем кнопку генератора (если ещё не добавлена)
-  const modal=document.querySelector('#modalOverlay .modal');
-  if(!document.getElementById('genScheduleBtn')){
-    const btn=document.createElement('button');
-    btn.id='genScheduleBtn';
-    btn.className='add-lesson-btn';
-    btn.style.cssText='margin-top:12px;background:#7c5cfc;color:white;font-size:14px';
-    btn.textContent='🎲 Сгенерировать расписание';
-    btn.onclick=openScheduleGenerator;
-    modal.appendChild(btn);
-  }
+renderLessonsEditor();
 }
 
 function renderLessonsEditor(){
-  const container=document.getElementById('lessonsEditor');
-  const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
-  let html='';
-  schedule.forEach((lesson,index)=>{
-    html+=`<div class="lesson-edit-item"><div class="edit-label">Урок ${index+1}</div>
-      <div class="lesson-edit-row"><input type="text" class="edit-subject" value="${lesson.subject}" placeholder="Предмет"></div>
-      <div class="lesson-edit-row"><input type="time" class="edit-start" value="${lesson.start}"><input type="time" class="edit-end" value="${lesson.end}"></div>
-      <div class="lesson-edit-row"><input type="text" class="edit-room" value="${lesson.room}" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
-      <div class="lesson-edit-row"><input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание"></div>
-      <div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})">🗑</button></div></div>`;
-  });
-  container.innerHTML=html;container.dataset.lessonCount=schedule.length;
+const container=document.getElementById('lessonsEditor');
+const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+let html='';
+schedule.forEach((lesson,index)=>{
+const grade=lesson.grade||null;
+const absent=lesson.absent||false;
+html+=`<div class="lesson-edit-item"><div class="edit-label">Урок ${index+1}</div>
+<div class="lesson-edit-row"><input type="text" class="edit-subject" value="${lesson.subject}" placeholder="Предмет"></div>
+<div class="lesson-edit-row"><input type="time" class="edit-start" value="${lesson.start}"><input type="time" class="edit-end" value="${lesson.end}"></div>
+<div class="lesson-edit-row"><input type="text" class="edit-room" value="${lesson.room}" placeholder="Кабинет"><input type="number" class="edit-break" value="10" min="1" max="30" placeholder="Перемена"></div>
+<div class="lesson-edit-row"><input type="text" class="edit-homework" value="${lesson.homework||''}" placeholder="Домашнее задание"></div>
+<div class="lesson-edit-row" style="margin-top:12px">
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<span style="font-size:13px;color:#8e8e93">Оценка:</span>
+<button onclick="setLessonGrade(${index},5)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===5?'#8b5cf6':'white'};color:${grade===5?'white':'#000'};cursor:pointer;font-weight:600">5</button>
+<button onclick="setLessonGrade(${index},4)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===4?'#8b5cf6':'white'};color:${grade===4?'white':'#000'};cursor:pointer;font-weight:600">4</button>
+<button onclick="setLessonGrade(${index},3)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===3?'#8b5cf6':'white'};color:${grade===3?'white':'#000'};cursor:pointer;font-weight:600">3</button>
+<button onclick="setLessonGrade(${index},2)" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${grade===2?'#8b5cf6':'white'};color:${grade===2?'white':'#000'};cursor:pointer;font-weight:600">2</button>
+<button onclick="setLessonAbsent(${index})" style="padding:8px 12px;border-radius:8px;border:1px solid #e0e0e0;background:${absent?'#ef4444':'white'};color:${absent?'white':'#000'};cursor:pointer;font-weight:600">Н</button>
+</div>
+</div>
+<div class="lesson-edit-row"><button class="delete-btn" onclick="deleteLesson(${index})">🗑</button></div></div>`;
+});
+container.innerHTML=html;container.dataset.lessonCount=schedule.length;
+}
+function setLessonGrade(index,grade){
+const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+if(schedule[index]){
+schedule[index].grade=grade;
+schedule[index].absent=false;
+renderLessonsEditor();
+}
+}
+function setLessonAbsent(index){
+const schedule=getScheduleForDate(selectedDate).filter(i=>i.breakTime===undefined);
+if(schedule[index]){
+schedule[index].absent=!schedule[index].absent;
+if(schedule[index].absent){
+schedule[index].grade=null;
+}
+renderLessonsEditor();
+}
 }
 function addNewLesson(){
   const container=document.getElementById('lessonsEditor');
@@ -1318,16 +1297,25 @@ function deleteLesson(index){
   container.dataset.lessonCount=ni.length;
 }
 function saveSchedule(){
-  const container=document.getElementById('lessonsEditor');const items=container.querySelectorAll('.lesson-edit-item');const ns=[];
-  items.forEach((item,index)=>{
-    const subj=item.querySelector('.edit-subject').value||`Урок ${index+1}`;
-    const st=item.querySelector('.edit-start').value;const en=item.querySelector('.edit-end').value;
-    const rm=item.querySelector('.edit-room').value||'101';
-    const hw=item.querySelector('.edit-homework').value||null;
-    ns.push({num:index+1,start:st,end:en,room:rm,subject:subj,homework:hw});
-    if(index<items.length-1){const[eh,em]=en.split(':').map(Number);const bt=eh*60+em+10;const be=`${String(Math.floor(bt/60)).padStart(2,'0')}:${String(bt%60).padStart(2,'0')}`;ns.push({breakTime:10,breakEnd:be});}
-  });
-  scheduleData[getDateKey(selectedDate)]=ns;renderSchedule();closeEditModal();
+const container=document.getElementById('lessonsEditor');const items=container.querySelectorAll('.lesson-edit-item');const ns=[];
+items.forEach((item,index)=>{
+const subj=item.querySelector('.edit-subject').value||`Урок ${index+1}`;
+const st=item.querySelector('.edit-start').value;const en=item.querySelector('.edit-end').value;
+const rm=item.querySelector('.edit-room').value||'101';
+const hw=item.querySelector('.edit-homework').value||null;
+const gradeBtns=item.querySelectorAll('button[onclick^="setLessonGrade"]');
+let grade=null;
+gradeBtns.forEach(btn=>{
+if(btn.style.background==='rgb(139, 92, 246)'){
+grade=parseInt(btn.textContent);
+}
+});
+const absentBtn=item.querySelector('button[onclick^="setLessonAbsent"]');
+const absent=absentBtn&&absentBtn.style.background==='rgb(239, 68, 68)';
+ns.push({num:index+1,start:st,end:en,room:rm,subject:subj,homework:hw,grade:grade,absent:absent});
+if(index<items.length-1){const[eh,em]=en.split(':').map(Number);const bt=eh*60+em+10;const be=`${String(Math.floor(bt/60)).padStart(2,'0')}:${String(bt%60).padStart(2,'0')}`;ns.push({breakTime:10,breakEnd:be});}
+});
+scheduleData[getDateKey(selectedDate)]=ns;renderSchedule();closeEditModal();
 }
 function resetToDefault(){delete scheduleData[getDateKey(selectedDate)];renderSchedule();closeEditModal();}
 function openNameModal(){
